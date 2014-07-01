@@ -104,7 +104,7 @@ Attractor myAttractor;
 // ------ mouse interaction ------
 
 int offsetX = 0, offsetY = 0, clickX = 0, clickY = 0;
-float rotationX = 0, rotationY = 0, targetRotationX = 0, targetRotationY = 0, clickRotationX, clickRotationY; 
+float rotationX = 0, rotationY = 0, targetRotationX = 0, targetRotationY = 0, clickRotationX = 0, clickRotationY; 
 boolean mouseInWindow = false;
 
 
@@ -178,7 +178,10 @@ void drawFont() {
   pushMatrix();
 
   // translation according the amoutn of letters
-  translate(letterX,letterY);
+  translate(width/2,height/2, 0); // translate(letterX, letterY, 0);
+  
+  rotateX(rotationX);
+  rotateY(rotationY); 
 
   // distortion on/off
   if (mousePressed) danceFactor = map(mouseX, 0,width, 1,3);
@@ -752,7 +755,7 @@ boolean theLockX, boolean theLockY, boolean theLockZ, boolean theDrawCurves) {
 
 
 
-
+// ------ for text editing ------
 void keyReleased() {
   if (keyCode == TAB) saveFrame(timestamp()+"_##.png");
   if (keyCode == SHIFT) {
@@ -765,13 +768,13 @@ void keyReleased() {
   // ------ pdf export ------
   // press CONTROL to start pdf recordPDF and ALT to stop it
   // ONLY by pressing ALT the pdf is saved to disk!
-  if (keyCode == CONTROL) {
-    if (recordPDF == false) {
-      beginRecord(PDF, timestamp()+".pdf");
-      println("recording started");
-      recordPDF = true;
-    }
-  } 
+//  if (keyCode == CONTROL) {
+//    if (recordPDF == false) {
+//      beginRecord(PDF, timestamp()+".pdf");
+//      println("recording started");
+//      recordPDF = true;
+//    }
+//  } 
   else if (keyCode == ALT) {
     if (recordPDF) {
       println("recording stopped");
