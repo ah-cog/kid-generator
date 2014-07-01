@@ -40,7 +40,7 @@ boolean recordPDF = false;
 char typedKey = 'a';
 float spacing = 20;
 float spaceWidth = 150; // width of letter ' '
-int fontSize = 200;
+int fontSize = 250;
 float lineSpacing = fontSize*1.5;
 float stepSize = 0.05;
 float danceFactor = 1;
@@ -92,13 +92,16 @@ float lineWeight = 1;
 float lineAlpha = 50;
 
 boolean drawLines = true;
-boolean drawCurves = false;
+boolean drawCurves = true;
 
 // nodes array
 Node[][][] nodes = new Node[maxCount*2+1][maxCount*2+1][maxCount*2+1];
 
 // attraktor 
 Attractor myAttractor;
+
+
+ArrayList<Attractor> letterAttractor;
 
 
 // ------ mouse interaction ------
@@ -138,7 +141,16 @@ void setup() {
 
   // init attractor
   myAttractor = new Attractor();
-  myAttractor.setMode(Attractor.SMOOTH); 
+  myAttractor.setMode(Attractor.SMOOTH);
+ 
+  // letter attractor
+  letterAttractor = new ArrayList<Attractor>();
+//  for (int i = 0; i < 5; i++) {
+//    Attractor attractor = new Attractor();
+//    attractor.setMode(Attractor.SMOOTH);
+//    
+//    letterAttractor.add(attractor);
+//  }
 
   // init grid
   reset();
@@ -223,6 +235,27 @@ void drawFont() {
   }
 
   popMatrix();
+  
+  // letter attractor: update node points
+// for (int i = 0; i < pnts.length; i++ ) {
+//    letterAttractor.get(i).x = pnts[i].x;
+//    letterAttractor.get(i).y = pnts[i].y;
+//  } 
+
+// letter attractor: create attractors for each of letter's nodes
+      letterAttractor.clear();
+      for (int i = 0; i < pnts.length; i++ ) {
+//        pnts[i].x += random(-stepSize,stepSize)*danceFactor;
+//        pnts[i].y += random(-stepSize,stepSize)*danceFactor;
+
+        Attractor attractor = new Attractor();
+        attractor.setMode(Attractor.SMOOTH);
+        
+        attractor.x = pnts[i].x;
+        attractor.y = pnts[i].y;
+        
+        letterAttractor.add(attractor);
+      }
 }
 
 
@@ -288,22 +321,47 @@ void draw() {
   }
 
 
-  myAttractor.radius = attractorRadius;
-  myAttractor.ramp = attractorRamp;
-  if (mousePressed && mouseButton==LEFT && !guiEvent) {
-    if (!keyPressed) {
-      // attraction, if left click
-      myAttractor.strength = -attractorStrength; 
-    } 
-    else if (keyPressed && keyCode == SHIFT) {
-      // repulsion, if shift + left click
-      myAttractor.strength = attractorStrength; 
-    }
-  } 
-  else {
-    // otherwise no attraction or repulsion
-    myAttractor.strength = 0; 
+//  myAttractor.radius = attractorRadius;
+//  myAttractor.ramp = attractorRamp;
+//  if (mousePressed && mouseButton==LEFT && !guiEvent) {
+//    if (!keyPressed) {
+//      // attraction, if left click
+//      myAttractor.strength = -attractorStrength; 
+//    } 
+//    else if (keyPressed && keyCode == SHIFT) {
+//      // repulsion, if shift + left click
+//      myAttractor.strength = attractorStrength; 
+//    }
+//  } 
+//  else {
+//    // otherwise no attraction or repulsion
+//    myAttractor.strength = 0; 
+//  }
+  myAttractor.strength = 0; 
+  
+  // letter attractor
+  for (int i = 0; i < letterAttractor.size(); i++) {
+    letterAttractor.get(i).radius = 50;
+    letterAttractor.get(i).ramp = 1;
   }
+//  if (mousePressed && mouseButton==LEFT && !guiEvent) {
+//    if (!keyPressed) {
+//      // attraction, if left click
+//      for (int i = 0; i < letterAttractor.size(); i++) {
+//        letterAttractor.get(i).strength = -attractorStrength;
+//      } 
+//    } 
+//  } 
+//  else {
+//    // otherwise no attraction or repulsion
+//    for (int i = 0; i < letterAttractor.size(); i++) {
+//      letterAttractor.get(i).strength = 0;
+//    }  
+//  }
+  // attraction, if left click
+  for (int i = 0; i < letterAttractor.size(); i++) {
+    letterAttractor.get(i).strength = -attractorStrength;
+  } 
 
 
   randomSeed(433);
@@ -317,6 +375,15 @@ void draw() {
   myAttractor.z = 0;
   myAttractor.rotateX(-rotationX);
   myAttractor.rotateY(-rotationY);
+  
+  // letter attractor
+  for (int i = 0; i < letterAttractor.size(); i++) {
+//    letterAttractor.get(i).x = (mouseX-width/2) + random(-500, 500); // TODO: Set to coordinates of node/point on letter mesh
+//    letterAttractor.get(i).y = (mouseY-height/2) + random(-500, 500); // TODO: Set to coordinates of node/point on letter mesh
+//    letterAttractor.get(i).z = 0; // TODO: Set to coordinates of node/point on letter mesh
+    letterAttractor.get(i).rotateX(-rotationX);
+    letterAttractor.get(i).rotateY(-rotationY);
+  }
 
 
   // ------ attract and update node positions ------
@@ -326,6 +393,12 @@ void draw() {
       for (int ix = maxCount-xCount; ix <= maxCount+xCount; ix++) {
         myAttractor.attract(nodes[iz][iy][ix]);
         nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+        
+        // letter attractor
+        for (int i = 0; i < letterAttractor.size(); i++) {
+          letterAttractor.get(i).attract(nodes[iz][iy][ix]);
+          nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+        }
       }
     }  
   }
@@ -624,7 +697,7 @@ void updateDamping() {
 
 void reset() {
   colors = defaultColors;
-  setParas(10, 10, 1,  30, 30, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, false);
+  setParas(12, 12, 0,  30, 30, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, false);
 
   initGrid();
 
@@ -862,6 +935,30 @@ void keyPressed(){
       pnts = grp.getPoints(); 
       freeze = false;
       loop();
+      
+//      // letter attractor: create attractors for each of letter's nodes
+//      letterAttractor.clear();
+//      for (int i = 0; i < pnts.length; i++ ) {
+////        pnts[i].x += random(-stepSize,stepSize)*danceFactor;
+////        pnts[i].y += random(-stepSize,stepSize)*danceFactor;
+//
+//        Attractor attractor = new Attractor();
+//        attractor.setMode(Attractor.SMOOTH);
+//        
+//        attractor.x = pnts[i].x;
+//        attractor.y = pnts[i].y;
+//        
+//        letterAttractor.add(attractor);
+//      }
+      
+      // letter attractor
+//      letterAttractor = new ArrayList<Attractor>();
+//      for (int i = 0; i < 5; i++) {
+//        Attractor attractor = new Attractor();
+//        attractor.setMode(Attractor.SMOOTH);
+//        
+//        letterAttractor.add(attractor);
+//      }
     }
   } 
 }
