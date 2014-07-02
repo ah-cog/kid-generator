@@ -28,21 +28,32 @@
 
 import generativedesign.*;
 import processing.opengl.*;
+import javax.media.opengl.GL2;
 import processing.pdf.*;
 import java.util.Calendar;
 
 import geomerative.*; // for text editing
 
+// Parameters:
+
+// Letter segmentation parameters
+float defaultSegmentLength = 12; // e.g., 25 (original), 10, 5, 3
+int defaultSegmentorType = RCommand.UNIFORMLENGTH; // e.g., RCommand.ADAPTATIVE, RCommand.UNIFORMLENGTH
+// Letter attractor parameters
+float letterRadius = 20; // 15
+float defaultLetterRamp = 0.5; // 0.2
+
 // ------ for text editing ------
 
 boolean recordPDF = false;
 
-char typedKey = 'a';
+char typedKey = 'k';
+String typedWord = "kid";
 float spacing = 20;
 float spaceWidth = 150; // width of letter ' '
-int fontSize = 250;
+int fontSize = 450;
 float lineSpacing = fontSize*1.5;
-float stepSize = 0.05;
+float stepSize = 0.1;
 float danceFactor = 1;
 float letterX = 50;
 float textW = 50;
@@ -52,10 +63,15 @@ RFont font;
 RGroup grp;
 RPoint[] pnts;
 
+ArrayList<RGroup> grps = new ArrayList<RGroup>();
+ArrayList<RPoint[]> pntss = new ArrayList<RPoint[]>();
+boolean drawLetterGeometry = false;
+
 // ------ initial parameters and declarations ------
 
 color[] defaultColors = {
-  color(0, 130, 164)};
+  color(0, 130, 164)
+};
 
 color[] colors;
 
@@ -98,10 +114,10 @@ boolean drawCurves = true;
 Node[][][] nodes = new Node[maxCount*2+1][maxCount*2+1][maxCount*2+1];
 
 // attraktor 
-Attractor myAttractor;
+Attractor mouseAttractor;
 
 
-ArrayList<Attractor> letterAttractor;
+ArrayList<ArrayList<Attractor>> letterAttractor;
 
 
 // ------ mouse interaction ------
@@ -134,23 +150,19 @@ TileSaver tiler;
 void setup() {
   size(800, 800, OPENGL);
   hint(DISABLE_DEPTH_TEST);
+  
+  PGraphicsOpenGL pg = (PGraphicsOpenGL)g;
 
   tiler = new TileSaver(this);
 
   setupGUI();
 
   // init attractor
-  myAttractor = new Attractor();
-  myAttractor.setMode(Attractor.SMOOTH);
+  mouseAttractor = new Attractor();
+  mouseAttractor.setMode(Attractor.SMOOTH);
  
-  // letter attractor
-  letterAttractor = new ArrayList<Attractor>();
-//  for (int i = 0; i < 5; i++) {
-//    Attractor attractor = new Attractor();
-//    attractor.setMode(Attractor.SMOOTH);
-//    
-//    letterAttractor.add(attractor);
-//  }
+  // letter attractor: initialize list
+  letterAttractor = new ArrayList<ArrayList<Attractor>>();
 
   // init grid
   reset();
@@ -172,25 +184,59 @@ void setupFont() {
   //RCommand.setSegmentStep(10);
   //RCommand.setSegmentator(RCommand.UNIFORMSTEP);
 
-  RCommand.setSegmentLength(25);
-  RCommand.setSegmentator(RCommand.UNIFORMLENGTH);
+  RCommand.setSegmentLength(defaultSegmentLength); // RCommand.setSegmentLength(25);
+  RCommand.setSegmentator(defaultSegmentorType);
 
   //RCommand.setSegmentAngle(random(0,HALF_PI));
   //RCommand.setSegmentator(RCommand.ADAPTATIVE);
-
-  grp = font.toGroup(typedKey+"");
-  textW = grp.getWidth();
-  pnts = grp.getPoints(); 
+  
+  float groupWidth = font.toGroup(typedWord + "").getWidth();
+  float letterWidth = 0;
+  float maxLetterWidth = 0;
+  float totalWidth = 0;
+  for (int i = 0; i < typedWord.length(); i++) {
+    RGroup group = font.toGroup(typedWord.charAt(i) + "");
+    letterWidth += group.getWidth();
+    if (letterWidth >= maxLetterWidth) {
+      maxLetterWidth = letterWidth;
+    }
+  }
+  totalWidth = maxLetterWidth * typedWord.length();
+  
+  // Create nodes and line segments from text 
+  float letterPosX = -1 * (groupWidth / 2);
+  for (int i = 0; i < typedWord.length(); i++) {
+    RGroup group = font.toGroup(typedWord.charAt(i) + ""); // grp = font.toGroup(typedKey+"");
+    if (i > 0) {
+      float previousLetterWidth = font.toGroup(typedWord.charAt(i - 1) + "").getWidth();
+      letterPosX = letterPosX + previousLetterWidth + spacing;
+    } else {
+    }
+    group.translate(letterPosX, (group.getHeight() / 2)); //grp.translate((-1 * (width/2)) + 50, (grp.getHeight() / 2)); // group.translate(-1 * (group.getWidth() / 2), (group.getHeight() / 2)); //grp.translate((-1 * (width/2)) + 50, (grp.getHeight() / 2));
+    textW = group.getWidth(); // TODO: Change this to get the max width? or save per character? or compute on the fly?
+    RPoint[] points = group.getPoints();
+    
+    grps.add(group);
+    pntss.add(points);
+    
+    // Create attractor lists for the current letter
+    ArrayList<Attractor> attractor = new ArrayList<Attractor>();
+    letterAttractor.add(attractor);
+  }
+  
+//  for (int i = 0; i < pnts.length; i++ ) {
+//    pnts[i].x = pnts[i].x - 200;
+//  }
 }
 
 
-void drawFont() {
-//  background(255);
+void drawLetter() {
   noFill(); // fill(0, 0, 0);
-  pushMatrix();
-
-  // translation according the amoutn of letters
-  translate(width/2,height/2, 0); // translate(letterX, letterY, 0);
+//  pushMatrix();
+//
+//  // translation according the amoutn of letters
+//  //translate(letterX, height/2, 0); // translate(width/2,height/2, 0); // translate(letterX, letterY, 0);
+//  translate(height/2, height/2, 0);
   
   rotateX(rotationX);
   rotateY(rotationY); 
@@ -200,41 +246,46 @@ void drawFont() {
   else danceFactor = 1;
 
   // are there points to draw?
-  if (grp.getWidth() > 0) {
+  for(int letter = 0; letter < grps.size(); letter++) {
+  if (grps.get(letter).getWidth() > 0) {
     // let the points dance
-    for (int i = 0; i < pnts.length; i++ ) {
-      pnts[i].x += random(-stepSize,stepSize)*danceFactor;
-      pnts[i].y += random(-stepSize,stepSize)*danceFactor;  
+    for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
+      pntss.get(letter)[i].x += random(-stepSize,stepSize)*danceFactor;
+      pntss.get(letter)[i].y += random(-stepSize,stepSize)*danceFactor;
+//      pnts[i].x += random(-stepSize,stepSize)*danceFactor;
+//      pnts[i].y += random(-stepSize,stepSize)*danceFactor;  
     }
 
-    //  ------ lines: connected rounded  ------
-    strokeWeight(1.08); // strokeWeight(0.08);
-    //stroke(200,0,0);
-    beginShape();
-    // start controlpoint
-    curveVertex(pnts[pnts.length-1].x,pnts[pnts.length-1].y);
-    // only these points are drawn
-    for (int i=0; i<pnts.length; i++){
-      curveVertex(pnts[i].x, pnts[i].y);
+    if (drawLetterGeometry) {
+      //  ------ lines: connected rounded  ------
+      strokeWeight(1.08); // strokeWeight(0.08);
+      //stroke(200,0,0);
+      beginShape();
+      // start controlpoint
+      curveVertex(pntss.get(letter)[pntss.get(letter).length-1].x,pntss.get(letter)[pntss.get(letter).length-1].y);
+      // only these points are drawn
+      for (int i=0; i<pntss.get(letter).length; i++){
+        curveVertex(pntss.get(letter)[i].x, pntss.get(letter)[i].y);
+      }
+      curveVertex(pntss.get(letter)[0].x, pntss.get(letter)[0].y);
+      // end controlpoint
+      curveVertex(pntss.get(letter)[1].x, pntss.get(letter)[1].y);
+      endShape();
+  
+      //  ------ lines: connected straight  ------
+      strokeWeight(1.1); // strokeWeight(0.1);
+      stroke(128, 200);
+      beginShape();
+      for (int i=0; i<pntss.get(letter).length; i++){
+        vertex(pntss.get(letter)[i].x, pntss.get(letter)[i].y);
+        ellipse(pntss.get(letter)[i].x, pntss.get(letter)[i].y, 7, 7);
+      }
+      vertex(pntss.get(letter)[0].x, pntss.get(letter)[0].y);
+      endShape();
     }
-    curveVertex(pnts[0].x, pnts[0].y);
-    // end controlpoint
-    curveVertex(pnts[1].x, pnts[1].y);
-    endShape();
-
-    //  ------ lines: connected straight  ------
-    strokeWeight(1.1); // strokeWeight(0.1);
-    stroke(128);
-    beginShape();
-    for (int i=0; i<pnts.length; i++){
-      vertex(pnts[i].x, pnts[i].y);
-      ellipse(pnts[i].x, pnts[i].y, 7, 7);
-    }
-    vertex(pnts[0].x, pnts[0].y);
-    endShape();
   }
 
-  popMatrix();
+//  popMatrix();
   
   // letter attractor: update node points
 // for (int i = 0; i < pnts.length; i++ ) {
@@ -243,19 +294,19 @@ void drawFont() {
 //  } 
 
 // letter attractor: create attractors for each of letter's nodes
-      letterAttractor.clear();
-      for (int i = 0; i < pnts.length; i++ ) {
-//        pnts[i].x += random(-stepSize,stepSize)*danceFactor;
-//        pnts[i].y += random(-stepSize,stepSize)*danceFactor;
-
+      // TODO: Iterate through letterAttractor to clear each individually?
+      letterAttractor.get(letter).clear();
+      for (int i = 0; i < pntss.get(letter).length; i++ ) {
+        // Create attractor
         Attractor attractor = new Attractor();
         attractor.setMode(Attractor.SMOOTH);
-        
-        attractor.x = pnts[i].x;
-        attractor.y = pnts[i].y;
-        
-        letterAttractor.add(attractor);
+        // Set x and y coordinates of attractor
+        attractor.x = pntss.get(letter)[i].x;
+        attractor.y = pntss.get(letter)[i].y;
+        // Add attractor to list (for current letter)
+        letterAttractor.get(letter).add(attractor);
       }
+  }
 }
 
 
@@ -289,7 +340,6 @@ void draw() {
   if (tiler.checkStatus()) strokeWeight(lineWeight*qualityFactor);
   bezierDetail(10);
 
-
   // ------ set view ------
   pushMatrix();
   translate(width/2,height/2);
@@ -321,47 +371,48 @@ void draw() {
   }
 
 
-//  myAttractor.radius = attractorRadius;
-//  myAttractor.ramp = attractorRamp;
-//  if (mousePressed && mouseButton==LEFT && !guiEvent) {
-//    if (!keyPressed) {
-//      // attraction, if left click
-//      myAttractor.strength = -attractorStrength; 
-//    } 
-//    else if (keyPressed && keyCode == SHIFT) {
-//      // repulsion, if shift + left click
-//      myAttractor.strength = attractorStrength; 
-//    }
-//  } 
-//  else {
-//    // otherwise no attraction or repulsion
-//    myAttractor.strength = 0; 
-//  }
-  myAttractor.strength = 0; 
+  mouseAttractor.radius = attractorRadius;
+  mouseAttractor.ramp = attractorRamp;
+  if (mousePressed && mouseButton==LEFT && !guiEvent) {
+    if (!keyPressed) {
+      // attraction, if left click
+      mouseAttractor.strength = -attractorStrength; 
+    } 
+    else if (keyPressed && keyCode == SHIFT) {
+      // repulsion, if shift + left click
+      mouseAttractor.strength = attractorStrength; 
+    }
+  } 
+  else {
+    // otherwise no attraction or repulsion
+    mouseAttractor.strength = 0; 
+  }
   
   // letter attractor
-  for (int i = 0; i < letterAttractor.size(); i++) {
-    letterAttractor.get(i).radius = 50;
-    letterAttractor.get(i).ramp = 1;
+  for(int letter = 0; letter < letterAttractor.size(); letter++) {
+    for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
+      letterAttractor.get(letter).get(i).radius = letterRadius;
+      letterAttractor.get(letter).get(i).ramp = defaultLetterRamp;
+    }
+  //  if (mousePressed && mouseButton==LEFT && !guiEvent) {
+  //    if (!keyPressed) {
+  //      // attraction, if left click
+  //      for (int i = 0; i < letterAttractor.size(); i++) {
+  //        letterAttractor.get(i).strength = -attractorStrength;
+  //      } 
+  //    } 
+  //  } 
+  //  else {
+  //    // otherwise no attraction or repulsion
+  //    for (int i = 0; i < letterAttractor.size(); i++) {
+  //      letterAttractor.get(i).strength = 0;
+  //    }  
+  //  }
+    // attraction, if left click
+    for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
+      letterAttractor.get(letter).get(i).strength = -2;
+    } 
   }
-//  if (mousePressed && mouseButton==LEFT && !guiEvent) {
-//    if (!keyPressed) {
-//      // attraction, if left click
-//      for (int i = 0; i < letterAttractor.size(); i++) {
-//        letterAttractor.get(i).strength = -attractorStrength;
-//      } 
-//    } 
-//  } 
-//  else {
-//    // otherwise no attraction or repulsion
-//    for (int i = 0; i < letterAttractor.size(); i++) {
-//      letterAttractor.get(i).strength = 0;
-//    }  
-//  }
-  // attraction, if left click
-  for (int i = 0; i < letterAttractor.size(); i++) {
-    letterAttractor.get(i).strength = -attractorStrength;
-  } 
 
 
   randomSeed(433);
@@ -370,19 +421,18 @@ void draw() {
 
 
   // set attractor at the mouse position
-  myAttractor.x = (mouseX-width/2);
-  myAttractor.y = (mouseY-height/2);
-  myAttractor.z = 0;
-  myAttractor.rotateX(-rotationX);
-  myAttractor.rotateY(-rotationY);
+  mouseAttractor.x = (mouseX-width/2);
+  mouseAttractor.y = (mouseY-height/2);
+  mouseAttractor.z = 0;
+  mouseAttractor.rotateX(-rotationX);
+  mouseAttractor.rotateY(-rotationY);
   
   // letter attractor
-  for (int i = 0; i < letterAttractor.size(); i++) {
-//    letterAttractor.get(i).x = (mouseX-width/2) + random(-500, 500); // TODO: Set to coordinates of node/point on letter mesh
-//    letterAttractor.get(i).y = (mouseY-height/2) + random(-500, 500); // TODO: Set to coordinates of node/point on letter mesh
-//    letterAttractor.get(i).z = 0; // TODO: Set to coordinates of node/point on letter mesh
-    letterAttractor.get(i).rotateX(-rotationX);
-    letterAttractor.get(i).rotateY(-rotationY);
+  for (int letter = 0; letter < letterAttractor.size(); letter++) {
+    for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
+      letterAttractor.get(letter).get(i).rotateX(-rotationX);
+      letterAttractor.get(letter).get(i).rotateY(-rotationY);
+    }
   }
 
 
@@ -391,17 +441,21 @@ void draw() {
   for (int iz = maxCount-zCount; iz <= maxCount+zCount; iz++) {
     for (int iy = maxCount-yCount; iy <= maxCount+yCount; iy++) {
       for (int ix = maxCount-xCount; ix <= maxCount+xCount; ix++) {
-        myAttractor.attract(nodes[iz][iy][ix]);
+        mouseAttractor.attract(nodes[iz][iy][ix]);
         nodes[iz][iy][ix].update(lockX, lockY, lockZ);
         
         // letter attractor
-        for (int i = 0; i < letterAttractor.size(); i++) {
-          letterAttractor.get(i).attract(nodes[iz][iy][ix]);
-          nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+        for (int letter = 0; letter < letterAttractor.size(); letter++) {
+          for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
+            letterAttractor.get(letter).get(i).attract(nodes[iz][iy][ix]);
+            nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+          }
         }
       }
     }  
   }
+  
+  drawLetter();
 
 
   // ------ draw lines ------
@@ -531,7 +585,7 @@ void draw() {
     noFill();
     strokeWeight(1);
     stroke(circleColor, 20);
-    ellipse(mouseX, mouseY, myAttractor.radius*2, myAttractor.radius*2);
+    ellipse(mouseX, mouseY, mouseAttractor.radius*2, mouseAttractor.radius*2);
   }
 
 
@@ -564,10 +618,6 @@ void draw() {
 
   // draw next tile for high quality output
   tiler.post();
-  
-  
-  
-  drawFont();
 }
 
 
@@ -697,7 +747,8 @@ void updateDamping() {
 
 void reset() {
   colors = defaultColors;
-  setParas(12, 12, 0,  30, 30, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, false);
+  setParas(30, 30, 0,  12, 12, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, true);
+  // defaults: setParas(12, 12, 12,  30, 30, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, false);
 
   initGrid();
 
@@ -904,6 +955,7 @@ void keyPressed(){
     case ENTER:
     case RETURN:
       grp = font.toGroup(""); 
+      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2));
       letterY += lineSpacing;
       textW = letterX = 20;
       break;
@@ -913,15 +965,18 @@ void keyPressed(){
     case BACKSPACE:
     case DELETE:
       background(255);
-      grp = font.toGroup(""); 
+      grp = font.toGroup("");
+      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2)); 
       textW = letterX = 0;
       letterY = lineSpacing;
       freeze = false;
       loop();
       break;
     case ' ':
-      grp = font.toGroup(""); 
-      letterX += spaceWidth;
+//      grp = font.toGroup("");
+//      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2)); 
+//      letterX += spaceWidth;
+      drawLetterGeometry = !drawLetterGeometry;
       freeze = false;
       loop();
       break;
@@ -931,6 +986,7 @@ void keyPressed(){
       textW += spacing;
       letterX += textW;
       grp = font.toGroup(typedKey+"");
+      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2));
       textW = grp.getWidth();
       pnts = grp.getPoints(); 
       freeze = false;
@@ -990,56 +1046,4 @@ void mouseExited(MouseEvent e) {
 String timestamp() {
   return String.format("%1$ty%1$tm%1$td_%1$tH%1$tM%1$tS", Calendar.getInstance());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
