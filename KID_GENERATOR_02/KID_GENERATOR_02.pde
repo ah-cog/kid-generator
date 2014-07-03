@@ -37,12 +37,15 @@ import geomerative.*; // for text editing
 // Parameters:
 
 // Letter segmentation parameters
+boolean thickenGrid = false;
 float letterSegmentLength = 12; // e.g., 25 (original), 10, 5, 3
 int defaultSegmentorType = RCommand.UNIFORMLENGTH; // e.g., RCommand.ADAPTATIVE, RCommand.UNIFORMLENGTH
 // Letter attractor parameters
 float letterAttractorRadius = 20; // 15
 float letterAttractorRamp = 0.5; // 0.2
 int letterAttractorStrength = -2;
+boolean deformLetter = false;
+boolean moveLetter = true;
 boolean iterateLetter = false;
 
 // ------ for text editing ------
@@ -117,6 +120,7 @@ boolean drawCurves = true;
 
 // nodes array
 Node[][][] nodes = new Node[maxCount*2+1][maxCount*2+1][maxCount*2+1];
+boolean[][][] nodesTouched = new boolean[maxCount*2+1][maxCount*2+1][maxCount*2+1];
 
 // attractors
 Attractor mouseAttractor;
@@ -173,6 +177,14 @@ void setup() {
   
   // Setup font
   setupFont();
+  
+  for (int xi = 0; xi < maxCount*2+1; xi++) {
+    for (int yi = 0; yi < maxCount*2+1; yi++) {
+      for (int zi = 0; zi < maxCount*2+1; zi++) {
+        nodesTouched[xi][yi][zi] = false;
+      }
+    }
+  }
 }
 
 void setupFont() {
@@ -227,6 +239,9 @@ void resetLetters() {
     } else {
     }
     group.translate(letterPosX, (group.getHeight() / 2)); //grp.translate((-1 * (width/2)) + 50, (grp.getHeight() / 2)); // group.translate(-1 * (group.getWidth() / 2), (group.getHeight() / 2)); //grp.translate((-1 * (width/2)) + 50, (grp.getHeight() / 2));
+//    randomSeed(millis() % 100);
+//    group.translate(-1 * (groupWidth / 2) + random(-width,width), -1 * (groupWidth / 2) + random(height));
+    group.rotate(random(0,HALF_PI), random(0,HALF_PI), random(0,HALF_PI));
     textW = group.getWidth(); // TODO: Change this to get the max width? or save per character? or compute on the fly?
     RPoint[] points = group.getPoints();
     
@@ -262,8 +277,37 @@ void drawLetter() {
   // are there points to draw?
   for(int letter = 0; letter < grps.size(); letter++) {
   if (grps.get(letter).getWidth() > 0) {
-    // let the points dance
-    if (iterateLetter) {
+    
+    if (moveLetter) {
+      for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
+//        pntss.get(letter)[i].x += 1 * (3 * stepSize); // TODO: move/rotate WRT "origin" point of the letter
+//        pntss.get(letter)[i].y += 1 * (3 * stepSize);
+
+        float cx = 0;
+        float cy = 0;
+        float angle = random(-0.01, 0.01); // float angle = random(-PI/2, PI/2);
+        
+        RPoint p = pntss.get(letter)[i];
+
+        float s = sin(angle);
+        float c = cos(angle);
+      
+        // translate point back to origin:
+        p.x -= cx;
+        p.y -= cy;
+      
+        // rotate point
+        float xnew = p.x * c - p.y * s;
+        float ynew = p.x * s + p.y * c;
+      
+        // translate point back:
+        p.x = xnew + cx;
+        p.y = ynew + cy;
+      }
+    }
+    
+    // deform the letter geometry... let the points dance
+    if (deformLetter) {
       for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
         pntss.get(letter)[i].x += random(-stepSize,stepSize)*danceFactor;
         pntss.get(letter)[i].y += random(-stepSize,stepSize)*danceFactor;
@@ -464,8 +508,16 @@ void draw() {
           // letter attractor
           for (int letter = 0; letter < letterAttractor.size(); letter++) {
             for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
+              float currentX = nodes[iz][iy][ix].x;
+              float currentY = nodes[iz][iy][ix].y;
+              float currentZ = nodes[iz][iy][ix].z;
+              
               letterAttractor.get(letter).get(i).attract(nodes[iz][iy][ix]);
               nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+              
+              if (nodes[iz][iy][ix].x != currentX || nodes[iz][iy][ix].y != currentY || nodes[iz][iy][ix].z != currentZ) {
+                nodesTouched[iz][iy][ix] = true;
+              } 
             }
           }
         }
@@ -487,7 +539,7 @@ void draw() {
       if (c == color(0) && invertBackground) c = color(360);
       stroke(c, lineAlpha);
       for (int iy = maxCount-yCount; iy <= maxCount+yCount; iy++) {
-        drawLine(nodes[iz][iy], xCount, drawCurves);
+        drawLine(nodes[iz][iy], xCount, drawCurves, iz, iy, -1);
 
         if (savePDF) {
           println("saving to pdf – step " + (stepI++)); 
@@ -511,7 +563,7 @@ void draw() {
         for (int iy = 0; iy < maxCount*2+1; iy++) {
           pts[ii++] = nodes[iz][iy][ix];
         }
-        drawLine(pts, yCount, drawCurves);
+        drawLine(pts, yCount, drawCurves, iz, -1, ix);
         if (savePDF) {
           println("saving to pdf – step " + (stepI++)); 
         }
@@ -532,7 +584,7 @@ void draw() {
         for (int iz = 0; iz < maxCount*2+1; iz++) {
           pts[ii++] = nodes[iz][iy][ix];
         }
-        drawLine(pts, zCount, drawCurves);
+        drawLine(pts, zCount, drawCurves, -1, iy, ix);
         if (savePDF) {
           println("saving to pdf – step " + (stepI++)); 
         }
@@ -697,6 +749,92 @@ void drawLine(PVector[] points, int len, boolean curves) {
   endShape();
 }
 
+void drawLine(PVector[] points, int len, boolean curves, int iz, int iy, int ix) {
+  // this funktion draws a line from an array of PVectors
+  // len    : number of points to each side of the center index of the array
+  //          example: array-length=21, len=5 -> points[5] to points[15] will be drawn
+  // curves : if true, points will be connected with curves (a bit like curveVertex, 
+  //          not as accurate, but faster) 
+
+  PVector d1 = new PVector();
+  PVector d2 = new PVector();
+  float l1, l2, q0, q1, q2;
+
+  // first and last index to be drawn
+  int i1 = (points.length-1) / 2 - len;
+  int i2 = (points.length-1) / 2 + len;
+  
+//  if (nodesTouched[iz][iy][iz]) {
+//    strokeWeight(5.0);
+//  } else {
+//    strokeWeight(1.0);
+//  }
+
+  // draw first point
+  beginShape();
+  vertex(points[i1].x, points[i1].y, points[i1].z);
+  q0 = 0.5;
+
+  for (int i = i1+1; i <= i2; i++) {
+    
+    if (thickenGrid) {
+      boolean nodeTouched = false;
+      if (iz < 0) {
+        nodeTouched = nodesTouched[i][iy][ix];
+      } else if (iy < 0) {
+        nodeTouched = nodesTouched[iz][i][ix];
+      } else if (ix < 0) {
+        nodeTouched = nodesTouched[iz][iy][i];
+      }
+      
+      if (nodeTouched) {
+  //      stroke(color(0, 130, 164));
+        stroke(defaultColors[0]);
+        strokeWeight(5.0);
+        // fill(defaultColors[0]);
+      } else {
+        stroke(defaultColors[0]);
+        strokeWeight(0.5); // 20
+      }
+    }
+    
+    if (curves) {
+      if (i < i2) {
+        // distance to previous and next point
+        l1 = PVector.dist(points[i], points[i-1]);
+        l2 = PVector.dist(points[i], points[i+1]);
+        // vector form previous to next point
+        d2 = PVector.sub(points[i+1], points[i-1]);
+        // shortening of this vector
+        d2.mult(0.333);
+        // how to distribute d2 to the anchors
+        q1 = l1 / (l1+l2);
+        q2 = l2 / (l1+l2);
+      } 
+      else {
+        // special handling for the last index
+        l1 = PVector.dist(points[i], points[i-1]);
+        l2 = 0;
+        d2.set(0, 0, 0);
+        q1 = l1 / (l1+l2);
+        q2 = 0;
+      }
+      // draw bezierVertex
+      bezierVertex(points[i-1].x+d1.x*q0, points[i-1].y+d1.y*q0, points[i-1].z+d1.z*q0, 
+      points[i].x-d2.x*q1, points[i].y-d2.y*q1, points[i].z-d2.z*q1,
+      points[i].x, points[i].y, points[i].z);
+      // remember d2 and q2 for the next iteration
+      d1.set(d2);
+      q0 = q2;
+    } 
+    else {
+      vertex(points[i].x, points[i].y, points[i].z);
+    }  
+  }
+
+  endShape();
+}
+
 
 void initGrid() {
   float xPos, yPos, zPos;
@@ -770,7 +908,7 @@ resetLetters();
 
 void resetGrid() {
   colors = defaultColors;
-  setParas(30, 30, 0,  12, 12, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, true);
+  setParas(20, 20, 0,  15, 15, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, true);
   // defaults: setParas(12, 12, 12,  30, 30, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, false);
 
   initGrid();

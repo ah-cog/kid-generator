@@ -107,10 +107,16 @@ void setupGUI(){
   sliders[si++] = controlP5.addSlider("letterAttractorRamp",0.0,1.0,left,top+posY+40,len,15); // MG added
   sliders[si++] = controlP5.addSlider("letterSegmentLength",0.0,100.0,left,top+posY+60,len,15); // MG added
   sliders[si++] = controlP5.addSlider("letterStrokeWeight",0.0,100.0,left,top+posY+80,len,15); // MG added
-  toggles[ti] = controlP5.addToggle("iterateLetter",iterateLetter,left+0,top+posY+100,15,15);
+  toggles[ti] = controlP5.addToggle("deformLetter",deformLetter,left+0,top+posY+100,15,15);
+  toggles[ti++].setLabel("DeformLetter");
+  toggles[ti] = controlP5.addToggle("moveLetter",moveLetter,left+0,top+posY+120,15,15);
+  toggles[ti++].setLabel("MoveLetter");
+  toggles[ti] = controlP5.addToggle("iterateLetter",iterateLetter,left+0,top+posY+140,15,15);
   toggles[ti++].setLabel("IterateLetter");
-  toggles[ti] = controlP5.addToggle("drawLetterGeometry",drawLetterGeometry,left+0,top+posY+120,15,15);
+  toggles[ti] = controlP5.addToggle("drawLetterGeometry",drawLetterGeometry,left+0,top+posY+160,15,15);
   toggles[ti++].setLabel("DrawLetterGeometry");
+  toggles[ti] = controlP5.addToggle("thickenGrid",thickenGrid,left+0,top+posY+160,15,15);
+  toggles[ti++].setLabel("ThickenGrid");
 
 
   for (int i = 0; i < si; i++) {
@@ -302,9 +308,27 @@ void iterateLetter() {
 //  updateColors(invertBackground);
 }
 
+void deformLetter() {
+  guiEvent = true;
+  deformLetter = !deformLetter;
+//  updateColors(invertBackground);
+}
+
+void moveLetter() {
+  guiEvent = true;
+  moveLetter = !moveLetter;
+//  updateColors(invertBackground);
+}
+
 void drawLetterGeometry() {
   guiEvent = true;
   drawLetterGeometry = !drawLetterGeometry;
+//  updateColors(invertBackground);
+}
+
+void thickenGrid() {
+  guiEvent = true;
+  thickenGrid = !thickenGrid;
 //  updateColors(invertBackground);
 }
 
