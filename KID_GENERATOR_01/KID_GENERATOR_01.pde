@@ -37,21 +37,23 @@ import geomerative.*; // for text editing
 // Parameters:
 
 // Letter segmentation parameters
-float defaultSegmentLength = 12; // e.g., 25 (original), 10, 5, 3
+float letterSegmentLength = 12; // e.g., 25 (original), 10, 5, 3
 int defaultSegmentorType = RCommand.UNIFORMLENGTH; // e.g., RCommand.ADAPTATIVE, RCommand.UNIFORMLENGTH
 // Letter attractor parameters
-float letterRadius = 20; // 15
-float defaultLetterRamp = 0.5; // 0.2
+float letterAttractorRadius = 20; // 15
+float letterAttractorRamp = 0.5; // 0.2
+int letterAttractorStrength = -2;
+boolean iterateLetter = false;
 
 // ------ for text editing ------
 
 boolean recordPDF = false;
 
 char typedKey = 'k';
-String typedWord = "kid";
+String typedWord = "CCC";
 float spacing = 20;
 float spaceWidth = 150; // width of letter ' '
-int fontSize = 450;
+int fontSize = 350;
 float lineSpacing = fontSize*1.5;
 float stepSize = 0.1;
 float danceFactor = 1;
@@ -60,12 +62,15 @@ float textW = 50;
 float letterY = lineSpacing;
 
 RFont font;
-RGroup grp;
-RPoint[] pnts;
+//RGroup grp;
+//RPoint[] pnts;
 
 ArrayList<RGroup> grps = new ArrayList<RGroup>();
 ArrayList<RPoint[]> pntss = new ArrayList<RPoint[]>();
+
+// Internal flags
 boolean drawLetterGeometry = false;
+float letterStrokeWeight = 1.08;
 
 // ------ initial parameters and declarations ------
 
@@ -113,12 +118,9 @@ boolean drawCurves = true;
 // nodes array
 Node[][][] nodes = new Node[maxCount*2+1][maxCount*2+1][maxCount*2+1];
 
-// attraktor 
+// attractors
 Attractor mouseAttractor;
-
-
 ArrayList<ArrayList<Attractor>> letterAttractor;
-
 
 // ------ mouse interaction ------
 
@@ -142,7 +144,7 @@ Bang[] bangs;
 // ------ image output ------
 
 boolean saveOneFrame = false;
-boolean savePDF = false;
+boolean savePDF = true;
 int qualityFactor = 3;
 TileSaver tiler;
 
@@ -165,7 +167,7 @@ void setup() {
   letterAttractor = new ArrayList<ArrayList<Attractor>>();
 
   // init grid
-  reset();
+  resetGrid();
 
   guiEvent = false;
   
@@ -177,19 +179,31 @@ void setupFont() {
   // allways initialize the library in setup
   RG.init(this);
   font = new RFont("FreeSansNoPunch.ttf", fontSize, RFont.LEFT);
+  
+  resetLetters();
+}
 
+void resetLetters() {
+  
   //  ------ get the points on the curve's shape  ------
   // set style and segment resolution
 
   //RCommand.setSegmentStep(10);
   //RCommand.setSegmentator(RCommand.UNIFORMSTEP);
 
-  RCommand.setSegmentLength(defaultSegmentLength); // RCommand.setSegmentLength(25);
+  RCommand.setSegmentLength(letterSegmentLength); // RCommand.setSegmentLength(25);
   RCommand.setSegmentator(defaultSegmentorType);
 
   //RCommand.setSegmentAngle(random(0,HALF_PI));
   //RCommand.setSegmentator(RCommand.ADAPTATIVE);
   
+  // Cleanup
+  for (int i = 0; i < letterAttractor.size(); i++) letterAttractor.get(i).clear();
+  letterAttractor.clear();
+  grps.clear();
+  pntss.clear();
+  
+  // Computer variables for later calculations
   float groupWidth = font.toGroup(typedWord + "").getWidth();
   float letterWidth = 0;
   float maxLetterWidth = 0;
@@ -249,16 +263,18 @@ void drawLetter() {
   for(int letter = 0; letter < grps.size(); letter++) {
   if (grps.get(letter).getWidth() > 0) {
     // let the points dance
-    for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
-      pntss.get(letter)[i].x += random(-stepSize,stepSize)*danceFactor;
-      pntss.get(letter)[i].y += random(-stepSize,stepSize)*danceFactor;
-//      pnts[i].x += random(-stepSize,stepSize)*danceFactor;
-//      pnts[i].y += random(-stepSize,stepSize)*danceFactor;  
+    if (iterateLetter) {
+      for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
+        pntss.get(letter)[i].x += random(-stepSize,stepSize)*danceFactor;
+        pntss.get(letter)[i].y += random(-stepSize,stepSize)*danceFactor;
+  //      pnts[i].x += random(-stepSize,stepSize)*danceFactor;
+  //      pnts[i].y += random(-stepSize,stepSize)*danceFactor;
+      }
     }
 
     if (drawLetterGeometry) {
       //  ------ lines: connected rounded  ------
-      strokeWeight(1.08); // strokeWeight(0.08);
+      strokeWeight(letterStrokeWeight); // strokeWeight(0.08);
       //stroke(200,0,0);
       beginShape();
       // start controlpoint
@@ -391,8 +407,8 @@ void draw() {
   // letter attractor
   for(int letter = 0; letter < letterAttractor.size(); letter++) {
     for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
-      letterAttractor.get(letter).get(i).radius = letterRadius;
-      letterAttractor.get(letter).get(i).ramp = defaultLetterRamp;
+      letterAttractor.get(letter).get(i).radius = letterAttractorRadius;
+      letterAttractor.get(letter).get(i).ramp = letterAttractorRamp;
     }
   //  if (mousePressed && mouseButton==LEFT && !guiEvent) {
   //    if (!keyPressed) {
@@ -410,7 +426,7 @@ void draw() {
   //  }
     // attraction, if left click
     for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
-      letterAttractor.get(letter).get(i).strength = -2;
+      letterAttractor.get(letter).get(i).strength = letterAttractorStrength;
     } 
   }
 
@@ -444,11 +460,13 @@ void draw() {
         mouseAttractor.attract(nodes[iz][iy][ix]);
         nodes[iz][iy][ix].update(lockX, lockY, lockZ);
         
-        // letter attractor
-        for (int letter = 0; letter < letterAttractor.size(); letter++) {
-          for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
-            letterAttractor.get(letter).get(i).attract(nodes[iz][iy][ix]);
-            nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+        if (iterateLetter) {
+          // letter attractor
+          for (int letter = 0; letter < letterAttractor.size(); letter++) {
+            for (int i = 0; i < letterAttractor.get(letter).size(); i++) {
+              letterAttractor.get(letter).get(i).attract(nodes[iz][iy][ix]);
+              nodes[iz][iy][ix].update(lockX, lockY, lockZ);
+            }
           }
         }
       }
@@ -746,6 +764,11 @@ void updateDamping() {
 // ------ functions for reset and presets ------
 
 void reset() {
+resetGrid();
+resetLetters();
+}
+
+void resetGrid() {
   colors = defaultColors;
   setParas(30, 30, 0,  12, 12, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, true);
   // defaults: setParas(12, 12, 12,  30, 30, 30,  150, 3, 1, 0.1, false, 1, 50, true, true, true, false, false, false, false);
@@ -883,10 +906,10 @@ boolean theLockX, boolean theLockY, boolean theLockZ, boolean theDrawCurves) {
 void keyReleased() {
   if (keyCode == TAB) saveFrame(timestamp()+"_##.png");
   if (keyCode == SHIFT) {
-    // switch loop on/off
-    freeze = !freeze;
-    if (freeze == true) noLoop();
-    else loop();
+//    // switch loop on/off
+//    freeze = !freeze;
+//    if (freeze == true) noLoop();
+//    else loop();
   } 
   
   // ------ pdf export ------
@@ -943,9 +966,10 @@ void keyPressed(){
   }
 
   if(key==' ') {
-    freeze = !freeze;
-    if (freeze) noLoop();
-    else loop();
+    iterateLetter = !iterateLetter;
+//    freeze = !freeze;
+//    if (freeze) noLoop();
+//    else loop();
   }
   
   // ------ for text editing ------
@@ -954,67 +978,40 @@ void keyPressed(){
     switch(key) {
     case ENTER:
     case RETURN:
-      grp = font.toGroup(""); 
-      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2));
-      letterY += lineSpacing;
-      textW = letterX = 20;
-      break;
+//      grp = font.toGroup(""); 
+//      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2));
+//      letterY += lineSpacing;
+//      textW = letterX = 20;
+//      break;
     case ESC:
     case TAB:
       break;
     case BACKSPACE:
     case DELETE:
-      background(255);
-      grp = font.toGroup("");
-      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2)); 
-      textW = letterX = 0;
-      letterY = lineSpacing;
-      freeze = false;
-      loop();
-      break;
-    case ' ':
+//      background(255);
 //      grp = font.toGroup("");
 //      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2)); 
-//      letterX += spaceWidth;
-      drawLetterGeometry = !drawLetterGeometry;
-      freeze = false;
-      loop();
+//      textW = letterX = 0;
+//      letterY = lineSpacing;
+//      freeze = false;
+//      loop();
+      reset();
       break;
-    default:
-      typedKey = key;
-      // add to actual pos the letter width
-      textW += spacing;
-      letterX += textW;
-      grp = font.toGroup(typedKey+"");
-      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2));
-      textW = grp.getWidth();
-      pnts = grp.getPoints(); 
-      freeze = false;
-      loop();
-      
-//      // letter attractor: create attractors for each of letter's nodes
-//      letterAttractor.clear();
-//      for (int i = 0; i < pnts.length; i++ ) {
-////        pnts[i].x += random(-stepSize,stepSize)*danceFactor;
-////        pnts[i].y += random(-stepSize,stepSize)*danceFactor;
-//
-//        Attractor attractor = new Attractor();
-//        attractor.setMode(Attractor.SMOOTH);
-//        
-//        attractor.x = pnts[i].x;
-//        attractor.y = pnts[i].y;
-//        
-//        letterAttractor.add(attractor);
-//      }
-      
-      // letter attractor
-//      letterAttractor = new ArrayList<Attractor>();
-//      for (int i = 0; i < 5; i++) {
-//        Attractor attractor = new Attractor();
-//        attractor.setMode(Attractor.SMOOTH);
-//        
-//        letterAttractor.add(attractor);
-//      }
+    case 'g':
+    case 'G':
+      drawLetterGeometry = !drawLetterGeometry;
+      break;
+//    default:
+//      typedKey = key;
+//      // add to actual pos the letter width
+//      textW += spacing;
+//      letterX += textW;
+//      grp = font.toGroup(typedKey+"");
+//      grp.translate(-1 * (grp.getWidth() / 2), (grp.getHeight() / 2));
+//      textW = grp.getWidth();
+//      pnts = grp.getPoints(); 
+//      freeze = false;
+//      loop();
     }
   } 
 }

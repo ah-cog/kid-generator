@@ -60,7 +60,7 @@ void setupGUI(){
   bangs[bi] = controlP5.addBang("set4",left+270,top+posY,30,15);
   bangs[bi++].setLabel("Set 4"); 
   posY += 30;
-
+  
   sliders[si++] = controlP5.addSlider("xCount",0,maxCount,left,top+posY,len,15);
   sliders[si++] = controlP5.addSlider("yCount",0,maxCount,left,top+posY+20,len,15);
   sliders[si++] = controlP5.addSlider("zCount",0,maxCount,left,top+posY+40,len,15);
@@ -78,7 +78,7 @@ void setupGUI(){
   posY += 90;
 
   toggles[ti] = controlP5.addToggle("invertBackground",invertBackground,left+0,top+posY,15,15);
-  toggles[ti++].setLabel("Invert Background");
+  toggles[ti++].setLabel("InvertBackground");
   sliders[si++] = controlP5.addSlider("lineWeight",0.2,20,left,top+posY+20,len,15);
   sliders[si++] = controlP5.addSlider("lineAlpha",0,100,left,top+posY+40,len,15);
   toggles[ti] = controlP5.addToggle("drawX",drawX,left+0,top+posY+60,15,15);
@@ -100,6 +100,17 @@ void setupGUI(){
   toggles[ti] = controlP5.addToggle("drawCurves",drawCurves,left+0,top+posY+20,15,15);
   toggles[ti++].setLabel("Draw Curves"); 
   posY += 50;
+  
+  // Letters
+  sliders[si++] = controlP5.addSlider("letterAttractorRadius",0,100,left,top+posY,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterAttractorStrength",-300,300,left,top+posY+20,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterAttractorRamp",0.0,1.0,left,top+posY+40,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterSegmentLength",0.0,100.0,left,top+posY+60,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterStrokeWeight",0.0,100.0,left,top+posY+80,len,15); // MG added
+  toggles[ti] = controlP5.addToggle("iterateLetter",iterateLetter,left+0,top+posY+100,15,15);
+  toggles[ti++].setLabel("IterateLetter");
+  toggles[ti] = controlP5.addToggle("drawLetterGeometry",drawLetterGeometry,left+0,top+posY+120,15,15);
+  toggles[ti++].setLabel("DrawLetterGeometry");
 
 
   for (int i = 0; i < si; i++) {
@@ -283,6 +294,18 @@ void updateColors(boolean stat) {
       bangs[i].captionLabel().setColorBackground(0x99000000);
     }
   }
+}
+
+void iterateLetter() {
+  guiEvent = true;
+  iterateLetter = !iterateLetter;
+//  updateColors(invertBackground);
+}
+
+void drawLetterGeometry() {
+  guiEvent = true;
+  drawLetterGeometry = !drawLetterGeometry;
+//  updateColors(invertBackground);
 }
 
 
