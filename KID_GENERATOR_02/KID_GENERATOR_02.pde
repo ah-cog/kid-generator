@@ -37,7 +37,9 @@ import geomerative.*; // for text editing
 // Parameters:
 
 // Letter segmentation parameters
-boolean thickenGrid = false;
+boolean thickenGrid = true;
+boolean solidBackground = true;
+
 float letterSegmentLength = 12; // e.g., 25 (original), 10, 5, 3
 int defaultSegmentorType = RCommand.UNIFORMLENGTH; // e.g., RCommand.ADAPTATIVE, RCommand.UNIFORMLENGTH
 // Letter attractor parameters
@@ -278,41 +280,46 @@ void drawLetter() {
   for(int letter = 0; letter < grps.size(); letter++) {
   if (grps.get(letter).getWidth() > 0) {
     
-    if (moveLetter) {
-      for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
-//        pntss.get(letter)[i].x += 1 * (3 * stepSize); // TODO: move/rotate WRT "origin" point of the letter
-//        pntss.get(letter)[i].y += 1 * (3 * stepSize);
-
-        float cx = 0;
-        float cy = 0;
+    // iterate on the letter
+    if (iterateLetter) {
+      
+      // move the letter
+      if (moveLetter) {
+        
+        float cx = grps.get(letter).getCenter().x; // 0;
+        float cy = grps.get(letter).getCenter().y; // 0;
+        float offsetX = random(-1, 1);
+        float offsetY = random(-1, 1);
         float angle = random(-0.01, 0.01); // float angle = random(-PI/2, PI/2);
         
-        RPoint p = pntss.get(letter)[i];
-
-        float s = sin(angle);
-        float c = cos(angle);
-      
-        // translate point back to origin:
-        p.x -= cx;
-        p.y -= cy;
-      
-        // rotate point
-        float xnew = p.x * c - p.y * s;
-        float ynew = p.x * s + p.y * c;
-      
-        // translate point back:
-        p.x = xnew + cx;
-        p.y = ynew + cy;
+        for (int i = 0; i < pntss.get(letter).length; i++ ) {
+          
+          RPoint p = pntss.get(letter)[i];
+  
+          float s = sin(angle);
+          float c = cos(angle);
+        
+          // translate point back to origin:
+          p.x -= cx;
+          p.y -= cy;
+        
+          // rotate point
+          float xnew = p.x * c - p.y * s;
+          float ynew = p.x * s + p.y * c;
+        
+          // translate point back:
+          p.x = xnew + cx + offsetX;
+          p.y = ynew + cy + offsetY;
+        }
       }
-    }
-    
-    // deform the letter geometry... let the points dance
-    if (deformLetter) {
-      for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
-        pntss.get(letter)[i].x += random(-stepSize,stepSize)*danceFactor;
-        pntss.get(letter)[i].y += random(-stepSize,stepSize)*danceFactor;
-  //      pnts[i].x += random(-stepSize,stepSize)*danceFactor;
-  //      pnts[i].y += random(-stepSize,stepSize)*danceFactor;
+      
+      // deform the letter geometry... let the points dance
+      if (deformLetter) {
+        for (int i = 0; i < pntss.get(letter).length; i++ ) { //for (int i = 0; i < pnts.length; i++ ) {
+          RPoint point = pntss.get(letter)[i];
+          point.x += random(-stepSize, stepSize) * danceFactor;
+          point.y += random(-stepSize, stepSize) * danceFactor;
+        }
       }
     }
 
@@ -334,7 +341,7 @@ void drawLetter() {
   
       //  ------ lines: connected straight  ------
       strokeWeight(1.1); // strokeWeight(0.1);
-      stroke(128, 200);
+      stroke(255, 255, 255); //stroke(128, 200);
       beginShape();
       for (int i=0; i<pntss.get(letter).length; i++){
         vertex(pntss.get(letter)[i].x, pntss.get(letter)[i].y);
@@ -379,13 +386,13 @@ void draw() {
     beginRaw(PDF, timestamp()+".pdf");
   }
 
-  colorMode(HSB, 360, 100, 100, 100);
+  colorMode(RGB); // colorMode(HSB, 360, 100, 100, 100);
 
-  color bgColor = color(360);
+  color bgColor = color(255); // color bgColor = color(360);
   color circleColor = color(0);
   if (invertBackground) {
     bgColor = color(0);
-    circleColor = color(360);
+    circleColor = color(255); // circleColor = color(360);
   } 
   background(bgColor);
 
@@ -525,8 +532,15 @@ void draw() {
     }  
   }
   
-  drawLetter();
-
+  // ----- draw solid background -----
+  if (solidBackground) {
+    //fill(color(0, 150, 122));
+    rectMode(CENTER);
+    fill(defaultColors[0]);
+    noStroke();
+    rect(0, 0, 2 * xCount * gridStepX, 2* yCount * gridStepY);
+    noFill();
+  }
 
   // ------ draw lines ------
   int stepI = 1;
@@ -591,7 +605,10 @@ void draw() {
       }
     }
     lineDrawn = true;
-  } 
+  }
+  
+  // ------ draw letters ------
+  drawLetter();
 
 
   // if no lines were drawn, draw dots
@@ -789,11 +806,12 @@ void drawLine(PVector[] points, int len, boolean curves, int iz, int iy, int ix)
       
       if (nodeTouched) {
   //      stroke(color(0, 130, 164));
-        stroke(defaultColors[0]);
-        strokeWeight(5.0);
+        stroke(color(15, 208, 252));
+        strokeWeight(3.0);
         // fill(defaultColors[0]);
       } else {
         stroke(defaultColors[0]);
+        //stroke(color(255, 255, 255));
         strokeWeight(0.5); // 20
       }
     }
@@ -869,6 +887,9 @@ void initGrid() {
         n.damping = nodeDamping;
 
         nodes[iz][iy][ix] = n;
+        
+        // nodesTouched
+        nodesTouched[iz][iy][ix] = false;
       }
     }
   }

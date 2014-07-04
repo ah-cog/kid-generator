@@ -102,20 +102,22 @@ void setupGUI(){
   posY += 50;
   
   // Letters
-  sliders[si++] = controlP5.addSlider("letterAttractorRadius",0,100,left,top+posY,len,15); // MG added
-  sliders[si++] = controlP5.addSlider("letterAttractorStrength",-300,300,left,top+posY+20,len,15); // MG added
-  sliders[si++] = controlP5.addSlider("letterAttractorRamp",0.0,1.0,left,top+posY+40,len,15); // MG added
-  sliders[si++] = controlP5.addSlider("letterSegmentLength",0.0,100.0,left,top+posY+60,len,15); // MG added
-  sliders[si++] = controlP5.addSlider("letterStrokeWeight",0.0,100.0,left,top+posY+80,len,15); // MG added
-  toggles[ti] = controlP5.addToggle("deformLetter",deformLetter,left+0,top+posY+100,15,15);
+  toggles[ti] = controlP5.addToggle("solidBackground",solidBackground,left+0,top+posY,15,15);
+  toggles[ti++].setLabel("solidBackground");
+  sliders[si++] = controlP5.addSlider("letterAttractorRadius",0,100,left,top+posY+20,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterAttractorStrength",-300,300,left,top+posY+40,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterAttractorRamp",0.0,1.0,left,top+posY+60,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterSegmentLength",0.0,100.0,left,top+posY+80,len,15); // MG added
+  sliders[si++] = controlP5.addSlider("letterStrokeWeight",0.0,100.0,left,top+posY+100,len,15); // MG added
+  toggles[ti] = controlP5.addToggle("deformLetter",deformLetter,left+0,top+posY+120,15,15);
   toggles[ti++].setLabel("DeformLetter");
-  toggles[ti] = controlP5.addToggle("moveLetter",moveLetter,left+0,top+posY+120,15,15);
+  toggles[ti] = controlP5.addToggle("moveLetter",moveLetter,left+0,top+posY+140,15,15);
   toggles[ti++].setLabel("MoveLetter");
-  toggles[ti] = controlP5.addToggle("iterateLetter",iterateLetter,left+0,top+posY+140,15,15);
+  toggles[ti] = controlP5.addToggle("iterateLetter",iterateLetter,left+0,top+posY+160,15,15);
   toggles[ti++].setLabel("IterateLetter");
-  toggles[ti] = controlP5.addToggle("drawLetterGeometry",drawLetterGeometry,left+0,top+posY+160,15,15);
+  toggles[ti] = controlP5.addToggle("drawLetterGeometry",drawLetterGeometry,left+0,top+posY+180,15,15);
   toggles[ti++].setLabel("DrawLetterGeometry");
-  toggles[ti] = controlP5.addToggle("thickenGrid",thickenGrid,left+0,top+posY+160,15,15);
+  toggles[ti] = controlP5.addToggle("thickenGrid",thickenGrid,left+0,top+posY+200,15,15);
   toggles[ti++].setLabel("ThickenGrid");
 
 
@@ -329,6 +331,12 @@ void drawLetterGeometry() {
 void thickenGrid() {
   guiEvent = true;
   thickenGrid = !thickenGrid;
+//  updateColors(invertBackground);
+}
+
+void solidBackground() {
+  guiEvent = true;
+  solidBackground = !solidBackground;
 //  updateColors(invertBackground);
 }
 
