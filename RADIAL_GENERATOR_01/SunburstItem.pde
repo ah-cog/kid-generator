@@ -195,15 +195,6 @@ class SunburstItem {
       popMatrix();
     }
   }
-  
-  void createArc(float radius, float startAngle, float endAngle) {
-    startAngle = startAngle % TWO_PI;
-    endAngle = endAngle % TWO_PI;
-    
-    ArrayList<
-  }
-  
-  
 
   void drawRect(float theFolderScale, float theFileScale) {
     float rectWidth;
