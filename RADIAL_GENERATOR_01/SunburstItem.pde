@@ -18,7 +18,7 @@
 // limitations under the License.
 
 class SunburstItem {
-  File file;
+//  File file;
 
   // relations
   int depth; 
@@ -47,20 +47,20 @@ class SunburstItem {
   float c1X,c1Y,c2X,c2Y; // bezier controlpoints
 
   // ------ constructor ------
-  SunburstItem(int theIndex, int theIndexToParent, int theChildCount, int theDepth, float theFileSize, int theLastModified, File theFile, float theAngle, float theExtension, float theFolderMinFilesize, float theFolderMaxFilesize) {
+  SunburstItem(int theIndex, int theIndexToParent, int theChildCount, int theDepth, float theAngle, float theExtension) {
 
     this.depth = theDepth;
     this.index = theIndex;
     this.indexToParent = theIndexToParent;
 
-    this.file = theFile;
-    this.name = file.getName();
-    this.isDir = file.isDirectory();
-    this.lastModified = theLastModified;
-    this.fileSize = theFileSize;
-    this.childCount = theChildCount;
-    this.folderMinFilesize = theFolderMinFilesize;
-    this.folderMaxFilesize = theFolderMaxFilesize;
+//    this.file = theFile;
+//    this.name = file.getName();
+//    this.isDir = file.isDirectory();
+//    this.lastModified = theLastModified;
+//    this.fileSize = theFileSize;
+//    this.childCount = theChildCount;
+//    this.folderMinFilesize = theFolderMinFilesize;
+//    this.folderMaxFilesize = theFolderMaxFilesize;
 
     // sunburst angles and extension
     this.angleStart = theAngle;
@@ -68,13 +68,35 @@ class SunburstItem {
     this.angleCenter = theAngle + theExtension/2;
     this.angleEnd = theAngle + theExtension;
   }
+  
+//  SunburstItem(int theIndex, int theIndexToParent, int theChildCount, int theDepth, float theFileSize, int theLastModified, File theFile, float theAngle, float theExtension, float theFolderMinFilesize, float theFolderMaxFilesize) {
+//
+//    this.depth = theDepth;
+//    this.index = theIndex;
+//    this.indexToParent = theIndexToParent;
+//
+//    this.file = theFile;
+//    this.name = file.getName();
+//    this.isDir = file.isDirectory();
+//    this.lastModified = theLastModified;
+//    this.fileSize = theFileSize;
+//    this.childCount = theChildCount;
+//    this.folderMinFilesize = theFolderMinFilesize;
+//    this.folderMaxFilesize = theFolderMaxFilesize;
+//
+//    // sunburst angles and extension
+//    this.angleStart = theAngle;
+//    this.extension = theExtension;
+//    this.angleCenter = theAngle + theExtension/2;
+//    this.angleEnd = theAngle + theExtension;
+//  }
 
 
 
   // ------ update function, called only when the input files are changed ------
   void update(int theMappingMode) {
     if (indexToParent > -1) {
-      radius = calcEqualAreaRadius(depth,depthMax);
+      radius = calcAreaRadius(depth,depthMax);
       depthWeight = calcEqualAreaRadius(depth+1,depthMax) - radius;
       x  = cos(angleCenter) * radius;
       y  = sin(angleCenter) * radius;
@@ -135,18 +157,24 @@ class SunburstItem {
   // ------ draw functions ------
   void drawArc(float theFolderScale, float theFileScale) {
     float arcRadius;
+    float arcWidth = 100;
     if (depth > 0 ) {
       if (isDir) {
-        strokeWeight(depthWeight * theFolderScale);
-        arcRadius = radius + depthWeight*theFolderScale/2;  
+        strokeWeight(arcWidth); // strokeWeight(depthWeight * theFolderScale);
+        //arcRadius = radius + depthWeight*theFolderScale/2;
+        arcRadius = radius + arcWidth; // *theFolderScale/2;  
       } 
       else {  
-        strokeWeight(depthWeight * theFileScale); 
-        arcRadius = radius + depthWeight*theFileScale/2;  
+        strokeWeight(arcWidth * theFileScale); // strokeWeight(depthWeight * theFileScale); 
+        // arcRadius = radius + depthWeight*theFileScale/2;
+        arcRadius = radius + arcWidth; // *theFileScale/2;  
       } 
-      stroke(col); 
+      
+      //stroke(col);
+      stroke(arcStrokeColor); 
+      fill(arcFillColor);
       //arc(0,0, arcRadius,arcRadius, angleStart, angleEnd);
-      arcWrap(0,0, arcRadius,arcRadius, angleStart, angleEnd); // normaly arc should work
+      arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
     }
   }
 
@@ -156,6 +184,7 @@ class SunburstItem {
   void arcWrap(float theX, float theY, float theW, float theH, float theA1, float theA2) {
     if (arcLength > 2.5) {   
       arc(theX,theY, theW,theH, theA1, theA2);
+      // TODO: Replace with custom drawing function
     } 
     else {
       strokeWeight(arcLength);
@@ -166,6 +195,15 @@ class SunburstItem {
       popMatrix();
     }
   }
+  
+  void createArc(float radius, float startAngle, float endAngle) {
+    startAngle = startAngle % TWO_PI;
+    endAngle = endAngle % TWO_PI;
+    
+    ArrayList<
+  }
+  
+  
 
   void drawRect(float theFolderScale, float theFileScale) {
     float rectWidth;

@@ -51,7 +51,7 @@ import java.io.File;
 
 
 // ------ default folder path ------
-String defaultFolderPath = System.getProperty("user.home")+"/Desktop";
+String defaultFolderPath = System.getProperty("user.home")+"/Desktop/Input";
 //String defaultFolderPath = "/Users/admin/Desktop";
 //String defaultFolderPath = "C:\\windows";
 
@@ -77,16 +77,17 @@ float brightnessStart = 51, brightnessEnd = 77;
 
 float folderBrightnessStart = 20, folderBrightnessEnd = 90;
 float folderStrokeBrightnessStart = 20, folderStrokeBrightnessEnd = 90;
-float fileArcScale = 1.0, folderArcScale = 0.2;
+float fileArcScale = 1.0; // 1.0
+float folderArcScale = 0.0; // 0.2
 float strokeWeightStart = 0.5, strokeWeightEnd = 1.0;
-float dotSize = 3, dotBrightness = 1;
+float dotSize = 0, dotBrightness = 1;
 float backgroundBrightness = 100;
 
 int mappingMode = 1;
 boolean useArc = true;
 boolean useBezierLine = true;
 boolean showArcs = true;
-boolean showLines = true;
+boolean showLines = false;
 boolean savePDF = false;
 
 PFont font;
@@ -102,10 +103,18 @@ int childCountMin, childCountMax;
 int fileCounter = 0;
 
 
+boolean initialize = true;
+color arcStrokeColor;
+color arcFillColor;
+
+
 void setup() { 
-  size(1000,800);
+//  size(1000,800);
+  size(800, 800, OPENGL);
+  hint(DISABLE_DEPTH_TEST);
+  
   setupGUI(); 
-  colorMode(HSB,360,100,100);
+  colorMode(HSB, 360, 100, 100);
 
   //font = createFont("Arial", 14);
   font = createFont("miso-regular.ttf", 14);
@@ -115,10 +124,19 @@ void setup() {
   cursor(CROSS);
 
   frame.setTitle("press 'o' to select an input folder!");
-  setInputFolder(defaultFolderPath);
+//  setInputFolder(defaultFolderPath);
 }
 
 void draw() {
+  
+  if (initialize) {
+    setInputFolder(defaultFolderPath);
+    initialize = false;
+    
+    arcStrokeColor = color(random(0, 360), 100, 100);
+    arcFillColor = color(random(0, 360), 100, 100);
+  }
+  
   if (savePDF) {
     println("\n"+"saving to pdf – starting");
     beginRecord(PDF, timestamp()+".pdf");
@@ -135,7 +153,7 @@ void draw() {
   textAlign(LEFT, TOP);
   smooth();
 
-  translate(width/2,height/2);
+  translate(width/2,height/2, -200);
 
   // ------ mouse rollover, arc hittest vars ------
   int hitTestIndex = -1;
@@ -201,6 +219,13 @@ void draw() {
       text(tex.toUpperCase(),mX+offset+2,mY+offset+2);
     }
   }
+  
+  
+//  ellipseMode(CENTER);
+//  arc(0, 0, 100, 100, 0, PI / 4);
+//  ellipseMode(RADIUS);
+
+  
 
 
   popMatrix();
@@ -223,11 +248,13 @@ void setInputFolder(File theFolder) {
 void setInputFolder(String theFolderPath) {
     // get files on harddisk
   println("\n"+theFolderPath);
-  FileSystemItem selectedFolder = new FileSystemItem(new File(theFolderPath)); 
+//  FileSystemItem selectedFolder = new FileSystemItem(new File(theFolderPath));
+  RadialLayerItem selectedFolder = new RadialLayerItem(3); 
   //selectedFolder.printDepthFirst();
   //selectedFolder.printBreadthFirst(); 
 
   // init sunburst
+  //sunburst = selectedFolder.createSunburstItems();
   sunburst = selectedFolder.createSunburstItems();
 
   // mine sunburst -> get min and max values 
@@ -252,6 +279,39 @@ void setInputFolder(String theFolderPath) {
   }
 }
 
+//void setInputFolder2(String theFolderPath) {
+//    // get files on harddisk
+//  println("\n"+theFolderPath);
+//  FileSystemItem selectedFolder = new FileSystemItem(new File(theFolderPath)); 
+//  //selectedFolder.printDepthFirst();
+//  //selectedFolder.printBreadthFirst(); 
+//
+//  // init sunburst
+//  //sunburst = selectedFolder.createSunburstItems();
+//  sunburst = selectedFolder.createRadialSunburstItems();
+//
+//  // mine sunburst -> get min and max values 
+//  // reset the old values, without the root element
+//  depthMax = 0;
+//  lastModifiedOldest = lastModifiedYoungest = 0; 
+//  fileSizeMin = fileSizeMax = 0;
+//  childCountMin = childCountMax = 0;
+//  for (int i = 1 ; i < sunburst.length; i++) {
+//    depthMax = max(sunburst[i].depth, depthMax);
+//    lastModifiedOldest = max(sunburst[i].lastModified, lastModifiedOldest);
+//    lastModifiedYoungest = min(sunburst[i].lastModified, lastModifiedYoungest);
+//    fileSizeMin = min(sunburst[i].fileSize, fileSizeMin);
+//    fileSizeMax = max(sunburst[i].fileSize, fileSizeMax);
+//    childCountMin = min(sunburst[i].childCount, childCountMin);
+//    childCountMax = max(sunburst[i].childCount, childCountMax);
+//  }
+//
+//  // update vars 
+//  for (int i = 0 ; i < sunburst.length; i++) {
+//    sunburst[i].update(mappingMode);
+//  }
+//}
+
 
 // ------ returns radiuses to have equal areas in each depth ------
 float calcEqualAreaRadius (int theDepth, int theDepthMax){
@@ -269,6 +329,10 @@ void keyReleased() {
   if (key == 's' || key == 'S') saveFrame(timestamp()+"_##.png");
   if (key == 'p' || key == 'P') savePDF = true;
   if (key == 'o' || key == 'O') selectFolder("please select a folder", "setInputFolder");
+  
+  if (key == 'r' || key == 'R') {
+    initialize = true;
+  }
 
   if (key == '1') {
     mappingMode = 1;
