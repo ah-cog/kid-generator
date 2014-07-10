@@ -51,6 +51,7 @@ float backgroundOffsetZ = -200;
 boolean drawOutlines = false;
 float outlineColor;
 float outlineWeight = 1.0;
+boolean enableTransparency = false;
 
 //class Layer {
 //  float x;
@@ -70,6 +71,7 @@ void draw(){
   background(255);
   
   smooth();
+  lights();
   
   if (reset) {
     for (int i = 0; i < 3; i++) { r0[i] = random(-1.1*HALF_PI, 1.1*HALF_PI); }
@@ -79,8 +81,8 @@ void draw(){
     for (int i = 0; i < 3; i++) { startAngles[i] = random(-PI, PI); }
     for (int i = 0; i < 3; i++) { thetas[i] = random(PI / 4, 1.5 * PI); }
     
-    background = color(random(0, 255), random(0, 255), random(0, 255), random(0, 255));
-    foreground = color(random(0, 255), random(0, 255), random(0, 255), random(0, 255));
+    background = color(random(0, 255), random(0, 255), random(0, 255), (enableTransparency == true ? random(0, 255) : 255));
+    foreground = color(random(0, 255), random(0, 255), random(0, 255), (enableTransparency == true ? random(0, 255) : 255));
     outlineColor = color(random(0, 255), random(0, 255), random(0, 255));
     
     reset = false;
