@@ -83,6 +83,16 @@ boolean initialize = true;
 color arcStrokeColor;
 color arcFillColor;
 
+float layerOneAngle = 1.84;
+float layerOneLength = 5.57;
+float layerTwoAngle = 3.07;
+float layerTwoLength = 3.66;
+float layerThreeAngle = 1.84;
+float layerThreeLength = 5.13;
+float layerOffset = 0.2 * PI;
+
+boolean showBackground = false;
+
 void setup() { 
   size(800, 800, OPENGL);
   // hint(DISABLE_DEPTH_TEST);
@@ -100,7 +110,7 @@ void setup() {
   textAlign(LEFT, TOP);
   cursor(CROSS);
 
-  frame.setTitle("press 'o' to select an input folder!");
+  frame.setTitle("KID Museum Icon Generator 1");
 }
 
 void draw() {
@@ -135,7 +145,7 @@ void draw() {
 
   // ------ draw the viz items ------
   for (int i = 0 ; i < sunburstItems.size(); i++) {
-    sunburstItems.get(i).drawArc();
+    sunburstItems.get(i).draw();
   }
   popMatrix();
 
@@ -151,17 +161,36 @@ void draw() {
 void generateSymbol (int layerCount) {
   
   sunburstItems.clear();
+  
+  color negativeSpaceColor = color(random(0, 360), 100, 100);
+  float arcWidth = 80; // random(50, 120);
 
   for (int i = 0; i < layerCount; i++) {
     if (i == 0) {
       RadialLayerItem radialForm = new RadialLayerItem(null);
+      radialForm.setNegativeColor(negativeSpaceColor);
+      radialForm.setArcWidth(arcWidth);
+      radialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle + layerOffset * PI);
+      radialForm.distance = random(layerOneLength - layerOffset * PI, layerOneLength + layerOffset * PI);
       radialLayerItems.add(radialForm);
       sunburstItems.add(radialForm.generateSunburstItem());
+//      sunburstItems.add(radialForm.generateNegativeSunburstItem());
       println("draw 1");
     } else {
       RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
+      // sunburstItem.setColor(this.strokeColor);
+      radialForm.setNegativeColor(negativeSpaceColor);
+      radialForm.setArcWidth(arcWidth);
+      if (i == 1) {
+        radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
+        radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
+      } else if (i == 2) {
+        radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
+        radialForm.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
+      }
       radialLayerItems.add(radialForm);
       sunburstItems.add(radialForm.generateSunburstItem());
+//      sunburstItems.add(radialForm.generateNegativeSunburstItem());
       println("draw 2");
     }
   }

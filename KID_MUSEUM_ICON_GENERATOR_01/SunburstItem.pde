@@ -9,6 +9,17 @@ class SunburstItem {
   float radius; 
   float x,y;
   float arcLength;
+  float arcWidth = 80;
+  
+  boolean enableBackground = false;
+  color backgroundColor;
+  float backgroundSize = 900;
+  
+  color strokeColor;
+  color negativeStrokeColor;
+  
+  boolean enableNegativeSpaceColor = false;
+  float negativeArcPadding = 0.01 * PI;
 
   // ------ constructor ------
   SunburstItem (int theDepth, float theAngle, float theExtension) {
@@ -20,15 +31,32 @@ class SunburstItem {
     this.extension = theExtension;
     this.angleCenter = theAngle + theExtension/2;
     this.angleEnd = theAngle + theExtension;
+    
+    this.backgroundColor = color(random(0, 360), 100, 100, 100);
+    
+    this.strokeColor = color(360, 100, 100);
+    this.negativeStrokeColor = color(180, 100, 100);
+  }
+  
+  void setColor(color strokeColor) {
+    this.strokeColor = strokeColor;
+  }
+  
+  void setNegativeColor(color negativeStrokeColor) {
+    this.negativeStrokeColor = negativeStrokeColor;
+  }
+  
+  void setArcWidth(float arcWidth) {
+    this.arcWidth = arcWidth;
   }
 
   // ------ draw functions ------
-  void drawArc () {
+  void draw() {
     
     float arcScale = 1.0;
     
     float arcRadius;
-    float arcWidth = 80;
+//    float arcWidth = 100;
     
     if (this.depth > 0 ) {
       
@@ -50,7 +78,7 @@ class SunburstItem {
       println("radius =", radius);
       println("arcRadius =", arcRadius);
       
-      stroke(arcStrokeColor); 
+      stroke(this.strokeColor); // stroke(arcStrokeColor);
       noFill(); // fill(arcFillColor);
       
       println("angleStart =", angleStart);
@@ -61,6 +89,30 @@ class SunburstItem {
       
       //arc(0,0, arcRadius,arcRadius, angleStart, angleEnd);
       arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
+      
+      // Draw background
+      if (this.enableBackground) {
+        pushMatrix();
+        noStroke();
+        fill(this.backgroundColor);
+        rect(-1 * (this.backgroundSize / 2), -1 * (this.backgroundSize / 2), this.backgroundSize, this.backgroundSize);
+        popMatrix();
+      }
+      
+      if (this.enableNegativeSpaceColor) {
+        stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
+        float newEndAngle = angleStart;
+        float newStartAngle = angleEnd % PI;
+//        while (newStartAngle > newEndAngle) {
+//          newStartAngle = newStartAngle % PI;
+//        }
+        arcWrap(0, 0, arcRadius, arcRadius, newStartAngle - this.negativeArcPadding, newEndAngle + this.negativeArcPadding); // normaly arc should work
+        
+        // Fill in the "negative circle" at the center
+        fill(this.negativeStrokeColor);
+        ellipse(0, 0, arcWidth, arcWidth);
+        noFill();
+      }
     }
   }
 
@@ -72,45 +124,14 @@ class SunburstItem {
       arc(theX,theY, theW,theH, theA1, theA2);
       // TODO: (Possibly) Replace with custom drawing function (e.g., Bezier curve estimation)
     } else {
-//      strokeWeight(arcLength);
-//      pushMatrix();
-//      rotate(angleCenter);
-//      translate(radius,0);
-//      line(0,0, (theW-radius)*2,0);
-//      popMatrix();
+      strokeWeight(arcLength);
+      pushMatrix();
+      rotate(angleCenter);
+      translate(radius,0);
+      line(0,0, (theW-radius)*2,0);
+      popMatrix();
     }
   }
-
-//  void drawDot() {
-//    if (depth > 0) {
-//      float diameter = dotSize;
-//      if (arcLength < diameter) diameter = arcLength*0.95;
-//      if (depth == 0) diameter = 3;
-//      fill(0,0,dotBrightness);
-//      noStroke();
-//      ellipse(x,y,diameter,diameter);
-//      noFill(); 
-//    }
-//  }
-
-
-//  void drawRelationLine() {
-//    if (depth > 0) {
-//      stroke(lineCol); 
-//      strokeWeight(lineWeight);
-//      line(x,y, sunburst[indexToParent].x,sunburst[indexToParent].y);
-//    }
-//  }
-
-
-//  void drawRelationBezier() {
-//    if (depth > 1) {
-//      stroke(lineCol); 
-//      strokeWeight(lineWeight);
-//      bezier(x,y, c1X,c1Y, c2X,c2Y, sunburst[indexToParent].x,sunburst[indexToParent].y);
-//    }
-//  }
-
 }
 
 

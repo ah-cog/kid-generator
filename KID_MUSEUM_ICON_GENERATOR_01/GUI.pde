@@ -25,37 +25,17 @@ void setupGUI() {
   int ti = 0;
   int posY = 0;
 
-//  ranges[ri++] = controlP5.addRange("file hue range",0,360,hueStart,hueEnd,left,top+posY+0,len,15);
-//  ranges[ri++] = controlP5.addRange("file saturation range",0,100,saturationStart,saturationEnd,left,top+posY+20,len,15);
-//  ranges[ri++] = controlP5.addRange("file brightness range",0,100,brightnessStart,brightnessEnd,left,top+posY+40,len,15);
-  posY += 70;
-
-//  ranges[ri++] = controlP5.addRange("folder brightness range",0,100,folderBrightnessStart,folderBrightnessEnd,left,top+posY+0,len,15);
-//  ranges[ri++] = controlP5.addRange("folder stroke brightness range",0,100,folderStrokeBrightnessStart,folderStrokeBrightnessEnd,left,top+posY+20,len,15);
+  sliders[si++] = controlP5.addSlider("layerOneAngle",0,TWO_PI,left,top+posY+0,len,15);
+  sliders[si++] = controlP5.addSlider("layerOneLength",0,TWO_PI,left,top+posY+20,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoAngle",0,TWO_PI,left,top+posY+40,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoLength",0,TWO_PI,left,top+posY+60,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+80,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+100,len,15);
+  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+120,len,15);
   posY += 50;
 
-  sliders[si++] = controlP5.addSlider("folderArcScale",0,1,left,top+posY+0,len,15);
-  sliders[si++] = controlP5.addSlider("fileArcScale",0,1,left,top+posY+20,len,15);
-  posY += 50;
-
-//  ranges[ri++] = controlP5.addRange("stroke weight range",0,10,strokeWeightStart,strokeWeightEnd,left,top+posY+0,len,15);
-  posY += 30;
-
-  sliders[si++] = controlP5.addSlider("dotSize",0,10,left,top+posY+0,len,15);
-  sliders[si++] = controlP5.addSlider("dotBrightness",0,100,left,top+posY+20,len,15);
-  posY += 50;
-
-  sliders[si++] = controlP5.addSlider("backgroundBrightness",0,100,left,top+posY+0,len,15);
-  posY += 30;
-
-//  toggles[ti] = controlP5.addToggle("showArcs",showArcs,left+0,top+posY,15,15);
-//  toggles[ti++].setLabel("show Arcs");
-//  toggles[ti] = controlP5.addToggle("showLines",showLines,left+0,top+posY+20,15,15);
-//  toggles[ti++].setLabel("show Lines");
-//  toggles[ti] = controlP5.addToggle("useBezierLine",useBezierLine,left+0,top+posY+40,15,15);
-//  toggles[ti++].setLabel("Bezier / Line");
-//  toggles[ti] = controlP5.addToggle("useArc",useArc,left+0,top+posY+60,15,15);
-//  toggles[ti++].setLabel("Arc / Rect");
+//  toggles[ti] = controlP5.addToggle("showBackground",showBackground,left+0,top+posY,15,15);
+//  toggles[ti++].setLabel("show background");
 
 
   for (int i = 0; i < si; i++) {
@@ -127,6 +107,8 @@ void controlEvent(ControlEvent theControlEvent) {
 //    strokeWeightStart = f[0];
 //    strokeWeightEnd = f[1];
 //  }
+
+  initialize = true;
 }
 
 
