@@ -94,7 +94,7 @@ float layerOffset = 0.2 * PI;
 boolean showBackground = false;
 
 void setup() { 
-  size(800, 800, OPENGL);
+  size(800, 800); // size(800, 800, OPENGL);
   // hint(DISABLE_DEPTH_TEST);
   
   sunburstItems = new ArrayList<SunburstItem>();
@@ -103,9 +103,8 @@ void setup() {
   setupGUI(); 
   colorMode(HSB, 360, 100, 100);
 
-  //font = createFont("Arial", 14);
-  font = createFont("miso-regular.ttf", 14);
-  textFont(font,12);
+  font = createFont("miso-regular.ttf", 14); // font = createFont("Arial", 14);
+  textFont(font, 12);
   textLeading(14);
   textAlign(LEFT, TOP);
   cursor(CROSS);
@@ -117,7 +116,7 @@ void draw() {
   
   if (savePDF) {
     println("\n"+"saving to pdf – starting");
-    beginRecord(PDF, timestamp()+".pdf");
+    beginRecord(PDF, timestamp() + ".pdf");
   }
   
   if (initialize) {
@@ -141,7 +140,9 @@ void draw() {
   textAlign(LEFT, TOP);
   smooth();
 
-  translate(width / 2, height / 2, -200);
+  // Adjust our view onto the generated visuals
+  translate(width / 2, height / 2); //  translate(width / 2, height / 2, -200);
+  scale(0.8);
 
   // ------ draw the viz items ------
   for (int i = 0 ; i < sunburstItems.size(); i++) {
@@ -163,7 +164,7 @@ void generateSymbol (int layerCount) {
   sunburstItems.clear();
   
   color negativeSpaceColor = color(random(0, 360), 100, 100);
-  float arcWidth = 80; // random(50, 120);
+  float arcWidth = 101; // random(50, 120);
 
   for (int i = 0; i < layerCount; i++) {
     if (i == 0) {

@@ -65,12 +65,6 @@ class RadialLayerItem {
     sunburstItem.setArcWidth(this.arcWidth);
     return (sunburstItem);
   }
-  
-//  SunburstItem generateNegativeSunburstItem() {
-//    SunburstItem sunburstItem = new SunburstItem(this.layerNumber, this.angle + this.distance, TWO_PI - abs((this.angle + this.distance)));
-//    sunburstItem.setColor(color(180, 50, 50));
-//    return sunburstItem;
-//  }
 
 }
 

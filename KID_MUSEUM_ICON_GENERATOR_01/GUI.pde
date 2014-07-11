@@ -76,38 +76,7 @@ void drawGUI(){
 
 // called on every change of the gui
 void controlEvent(ControlEvent theControlEvent) {
-  //println("got a control event from controller with id "+theControlEvent.controller().id());
-//  if(theControlEvent.controller().name().equals("file hue range")) {
-//    float[] f = theControlEvent.controller().arrayValue();
-//    hueStart = f[0];
-//    hueEnd = f[1];
-//  }
-//  if(theControlEvent.controller().name().equals("file saturation range")) {
-//    float[] f = theControlEvent.controller().arrayValue();
-//    saturationStart = f[0];
-//    saturationEnd = f[1];
-//  }
-//  if(theControlEvent.controller().name().equals("file brightness range")) {
-//    float[] f = theControlEvent.controller().arrayValue();
-//    brightnessStart = f[0];
-//    brightnessEnd = f[1];
-//  }
-//  if(theControlEvent.controller().name().equals("folder brightness range")) {
-//    float[] f = theControlEvent.controller().arrayValue();
-//    folderBrightnessStart = f[0];
-//    folderBrightnessEnd = f[1];
-//  }
-//  if(theControlEvent.controller().name().equals("folder stroke brightness range")) {
-//    float[] f = theControlEvent.controller().arrayValue();
-//    folderStrokeBrightnessStart = f[0];
-//    folderStrokeBrightnessEnd = f[1];
-//  }
-//  if(theControlEvent.controller().name().equals("stroke weight range")) {
-//    float[] f = theControlEvent.controller().arrayValue();
-//    strokeWeightStart = f[0];
-//    strokeWeightEnd = f[1];
-//  }
-
+  // println("got a control event from controller with id "+theControlEvent.controller().id()); 
   initialize = true;
 }
 

@@ -64,7 +64,7 @@ class SunburstItem {
       println("arcScale =", arcScale);
 
       strokeWeight(arcWidth * arcScale); // strokeWeight(depthWeight * theFileScale); 
-      // arcRadius = radius + depthWeight*theFileScale/2;
+      // arcRadius = radius + depthWeight*theFileScale / 2;
       radius = calcAreaRadius(depth, depthMax);
       x  = cos(angleCenter) * radius;
       y  = sin(angleCenter) * radius;
