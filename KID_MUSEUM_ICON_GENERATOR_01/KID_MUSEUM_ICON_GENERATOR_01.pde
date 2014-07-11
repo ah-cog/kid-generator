@@ -100,25 +100,25 @@ boolean savePDF = false;
 PFont font;
 
 // ------ program logic ------
-SunburstItem[] sunburst;
+//SunburstItem[] sunburst;
+ArrayList<SunburstItem> sunburst;
 ArrayList tmpSunburstItems;
 Calendar now = Calendar.getInstance();
 int depthMax;
-int lastModifiedOldest, lastModifiedYoungest;
-float fileSizeMin, fileSizeMax;
-int childCountMin, childCountMax;
-int fileCounter = 0;
 
 
 boolean initialize = true;
 color arcStrokeColor;
 color arcFillColor;
-
+ArrayList<RadialLayerItem> radialLayerItems;
 
 void setup() { 
 //  size(1000,800);
   size(800, 800, OPENGL);
-  //hint(DISABLE_DEPTH_TEST);
+  hint(DISABLE_DEPTH_TEST);
+  
+  sunburst = new ArrayList<SunburstItem>();
+  radialLayerItems = new ArrayList<RadialLayerItem>();
   
   setupGUI(); 
   colorMode(HSB, 360, 100, 100);
@@ -136,7 +136,7 @@ void setup() {
 void draw() {
   
   if (initialize) {
-    createIcon(3);
+    generateIcon(3);
     initialize = false;
     
     arcStrokeColor = color(360, 100, 100); // color(random(0, 360), 100, 100);
@@ -147,6 +147,8 @@ void draw() {
     println("\n"+"saving to pdf – starting");
     beginRecord(PDF, timestamp()+".pdf");
   }
+  
+  smooth();
 
   pushMatrix();
   colorMode(HSB,360,100,100,100);
@@ -154,12 +156,12 @@ void draw() {
   noFill();
   ellipseMode(RADIUS);
   strokeCap(SQUARE);
-  textFont(font,12);
+  textFont(font, 12);
   textLeading(14);
   textAlign(LEFT, TOP);
   smooth();
 
-  translate(width/2,height/2, -200);
+  translate(width / 2, height / 2, -200);
 
   // ------ mouse rollover, arc hittest vars ------
   int hitTestIndex = -1;
@@ -175,28 +177,30 @@ void draw() {
 
 
   // ------ draw the viz items ------
-  for (int i = 0 ; i < sunburst.length; i++) {
+  for (int i = 0 ; i < sunburst.size(); i++) {
     // draw arcs or rects
-    if (showArcs) { 
-      if (useArc) sunburst[i].drawArc(folderArcScale,fileArcScale);
-      else sunburst[i].drawRect(folderArcScale,fileArcScale);
-    }
+//    if (showArcs) { 
+//      if (useArc) {
+        sunburst.get(i).drawArc(1.0);
+//      }
+//      else sunburst[i].drawRect(folderArcScale,fileArcScale);
+//    }
 
     // hittest, which arc is the closest to the mouse
-    if (sunburst[i].depth == mDepth) {
-      if (mAngle > sunburst[i].angleStart && mAngle < sunburst[i].angleEnd) hitTestIndex=i;
-    }
+//    if (sunburst[i].depth == mDepth) {
+//      if (mAngle > sunburst[i].angleStart && mAngle < sunburst[i].angleEnd) hitTestIndex=i;
+//    }
   }
 
-  if (showLines) {
-    for (int i = 0 ; i < sunburst.length; i++) {
-      if (useBezierLine) sunburst[i].drawRelationBezier();
-      else sunburst[i].drawRelationLine();
-    } 
-  }
+//  if (showLines) {
+//    for (int i = 0 ; i < sunburst.length; i++) {
+//      if (useBezierLine) sunburst[i].drawRelationBezier();
+//      else sunburst[i].drawRelationLine();
+//    } 
+//  }
 
-  for (int i = 0 ; i < sunburst.length; i++) {
-    sunburst[i].drawDot();
+  for (int i = 0 ; i < sunburst.size(); i++) {
+    sunburst.get(i).drawDot();
   }
 
 
@@ -245,43 +249,49 @@ void draw() {
   drawGUI();
 }
 
+void generateIcon (int layerCount) {
+  
+  sunburst.clear();
 
-// ------ folder selection dialog + init visualization ------
-//void setInputFolder(File theFolder) {
-//  setInputFolder(theFolder.toString());
-//}
-
-void createIcon(int layerCount) {
-    // get files on harddisk
-//  println("\n"+theFolderPath);
-//  FileSystemItem selectedFolder = new FileSystemItem(new File(theFolderPath));
-  RadialLayerItem radialItem = new RadialLayerItem(3); 
-  //selectedFolder.printDepthFirst();
-  //selectedFolder.printBreadthFirst(); 
+  for (int i = 0; i < layerCount; i++) {
+    if (i == 0) {
+      RadialLayerItem radialForm = new RadialLayerItem(null);
+      radialLayerItems.add(radialForm);
+      sunburst.add(radialForm.createSunburstItem());
+      println("draw 1");
+    } else {
+      RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
+      radialLayerItems.add(radialForm);
+      sunburst.add(radialForm.createSunburstItem());
+      println("draw 2");
+    }
+  } 
 
   // Initialize icon (i.e., the sunburst diagram)
-  sunburst = radialItem.createSunburstItems();
+//  sunburst.add(radialForm.createSunburstItem());
+//  sunburst.add(radialForm2.createSunburstItem());
+//  sunburst.add(radialForm3.createSunburstItem());
 
   // mine sunburst -> get min and max values 
   // reset the old values, without the root element
   depthMax = 0;
-  lastModifiedOldest = lastModifiedYoungest = 0; 
-  fileSizeMin = fileSizeMax = 0;
-  childCountMin = childCountMax = 0;
-  for (int i = 1 ; i < sunburst.length; i++) {
-    depthMax = max(sunburst[i].depth, depthMax);
-    lastModifiedOldest = max(sunburst[i].lastModified, lastModifiedOldest);
-    lastModifiedYoungest = min(sunburst[i].lastModified, lastModifiedYoungest);
-    fileSizeMin = min(sunburst[i].fileSize, fileSizeMin);
-    fileSizeMax = max(sunburst[i].fileSize, fileSizeMax);
-    childCountMin = min(sunburst[i].childCount, childCountMin);
-    childCountMax = max(sunburst[i].childCount, childCountMax);
+//  lastModifiedOldest = lastModifiedYoungest = 0; 
+//  fileSizeMin = fileSizeMax = 0;
+//  childCountMin = childCountMax = 0;
+  for (int i = 1 ; i < sunburst.size(); i++) {
+    depthMax = max(sunburst.get(i).depth, depthMax);
+//    lastModifiedOldest = max(sunburst[i].lastModified, lastModifiedOldest);
+//    lastModifiedYoungest = min(sunburst[i].lastModified, lastModifiedYoungest);
+//    fileSizeMin = min(sunburst[i].fileSize, fileSizeMin);
+//    fileSizeMax = max(sunburst[i].fileSize, fileSizeMax);
+//    childCountMin = min(sunburst[i].childCount, childCountMin);
+//    childCountMax = max(sunburst[i].childCount, childCountMax);
   }
 
-  // update vars 
-  for (int i = 0 ; i < sunburst.length; i++) {
-    sunburst[i].update(mappingMode);
-  }
+//  // update vars 
+//  for (int i = 0 ; i < sunburst.length; i++) {
+//    sunburst[i].update(mappingMode);
+//  }
 }
 
 // ------ returns radiuses to have equal areas in each depth ------
@@ -297,7 +307,7 @@ float calcAreaRadius (int theDepth, int theDepthMax){
 
 // ------ interaction ------
 void keyReleased() {
-  if (key == 's' || key == 'S') saveFrame(timestamp()+"_##.png");
+  if (key == 's' || key == 'S') saveFrame("data/output/"+timestamp()+"_##.png");
   if (key == 'p' || key == 'P') savePDF = true;
 //  if (key == 'o' || key == 'O') selectFolder("please select a folder", "setInputFolder");
   
@@ -318,9 +328,9 @@ void keyReleased() {
     frame.setTitle("local folder file size: big / small files, each folder independent");
   }
   if (key == '1' || key == '2' || key == '3') {
-    for (int i = 0 ; i < sunburst.length; i++) {
-      sunburst[i].update(mappingMode);
-    }
+//    for (int i = 0 ; i < sunburst.si; i++) {
+//      sunburst[i].update(mappingMode);
+//    }
   }
 
   if (key=='m' || key=='M') {

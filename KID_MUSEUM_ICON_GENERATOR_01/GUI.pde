@@ -128,10 +128,10 @@ void controlEvent(ControlEvent theControlEvent) {
     strokeWeightEnd = f[1];
   }
 
-  // update vars 
-  for (int i = 0 ; i < sunburst.length; i++) {
-    sunburst[i].update(mappingMode);
-  }
+//  // update vars 
+//  for (int i = 0 ; i < sunburst.length; i++) {
+//    sunburst[i].update(mappingMode);
+//  }
 }
 
 
