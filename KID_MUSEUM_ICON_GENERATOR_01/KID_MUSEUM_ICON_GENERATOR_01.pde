@@ -57,12 +57,6 @@ import java.util.Date;
 import java.io.File;
 
 
-// ------ default folder path ------
-String defaultFolderPath = System.getProperty("user.home")+"/Desktop/Input";
-//String defaultFolderPath = "/Users/admin/Desktop";
-//String defaultFolderPath = "C:\\windows";
-
-
 // ------ ControlP5 ------
 ControlP5 controlP5;
 boolean showGUI = false;
@@ -72,37 +66,15 @@ Toggle[] toggles;
 
 
 // ------ interaction vars ------
-//float hueStart = 190, hueEnd = 195;
-//float hueStart = 320, hueEnd = 325;
-//float hueStart = 50, hueEnd = 55;
-//float saturationStart = 90, saturationEnd = 100;
-//float brightnessStart = 25, brightnessEnd = 85;
-
-float hueStart = 273, hueEnd = 323;
-float saturationStart = 73, saturationEnd = 100;
-float brightnessStart = 51, brightnessEnd = 77;
-
-float folderBrightnessStart = 20, folderBrightnessEnd = 90;
-float folderStrokeBrightnessStart = 20, folderStrokeBrightnessEnd = 90;
-float fileArcScale = 1.0; // 1.0
-float folderArcScale = 0.0; // 0.2
-float strokeWeightStart = 0.5, strokeWeightEnd = 1.0;
-float dotSize = 0, dotBrightness = 1;
 float backgroundBrightness = 100;
 
-int mappingMode = 1;
-boolean useArc = true;
-boolean useBezierLine = true;
-boolean showArcs = true;
-boolean showLines = false;
 boolean savePDF = false;
 
 PFont font;
 
 // ------ program logic ------
-//SunburstItem[] sunburst;
-ArrayList<SunburstItem> sunburst;
-ArrayList tmpSunburstItems;
+ArrayList<SunburstItem> sunburstItems;
+ArrayList<RadialLayerItem> radialLayerItems;
 Calendar now = Calendar.getInstance();
 int depthMax;
 
@@ -110,14 +82,12 @@ int depthMax;
 boolean initialize = true;
 color arcStrokeColor;
 color arcFillColor;
-ArrayList<RadialLayerItem> radialLayerItems;
 
 void setup() { 
-//  size(1000,800);
   size(800, 800, OPENGL);
-  hint(DISABLE_DEPTH_TEST);
+  // hint(DISABLE_DEPTH_TEST);
   
-  sunburst = new ArrayList<SunburstItem>();
+  sunburstItems = new ArrayList<SunburstItem>();
   radialLayerItems = new ArrayList<RadialLayerItem>();
   
   setupGUI(); 
@@ -135,24 +105,24 @@ void setup() {
 
 void draw() {
   
+  if (savePDF) {
+    println("\n"+"saving to pdf – starting");
+    beginRecord(PDF, timestamp()+".pdf");
+  }
+  
   if (initialize) {
-    generateIcon(3);
+    generateSymbol(3);
     initialize = false;
     
     arcStrokeColor = color(360, 100, 100); // color(random(0, 360), 100, 100);
     arcFillColor = color(random(0, 360), 100, 100);
   }
   
-  if (savePDF) {
-    println("\n"+"saving to pdf – starting");
-    beginRecord(PDF, timestamp()+".pdf");
-  }
-  
   smooth();
 
   pushMatrix();
-  colorMode(HSB,360,100,100,100);
-  background(0,0,backgroundBrightness);
+  colorMode(HSB, 360, 100, 100, 100);
+  background(0, 0, backgroundBrightness);
   noFill();
   ellipseMode(RADIUS);
   strokeCap(SQUARE);
@@ -163,81 +133,10 @@ void draw() {
 
   translate(width / 2, height / 2, -200);
 
-  // ------ mouse rollover, arc hittest vars ------
-  int hitTestIndex = -1;
-  float mX = mouseX-width/2;
-  float mY = mouseY-height/2;
-  float mAngle = atan2(mY-0, mX-0);
-  float mRadius = dist(0,0, mX,mY);
-
-  if (mAngle < 0) mAngle = map(mAngle,-PI,0,PI,TWO_PI);
-  else mAngle = map(mAngle,0,PI,0,PI);
-  // calc mouse depth with mouse radius ... transformation of calcEqualAreaRadius()
-  int mDepth = floor(pow(mRadius,2)*(depthMax+1)/pow(height*0.5,2));
-
-
   // ------ draw the viz items ------
-  for (int i = 0 ; i < sunburst.size(); i++) {
-    // draw arcs or rects
-//    if (showArcs) { 
-//      if (useArc) {
-        sunburst.get(i).drawArc(1.0);
-//      }
-//      else sunburst[i].drawRect(folderArcScale,fileArcScale);
-//    }
-
-    // hittest, which arc is the closest to the mouse
-//    if (sunburst[i].depth == mDepth) {
-//      if (mAngle > sunburst[i].angleStart && mAngle < sunburst[i].angleEnd) hitTestIndex=i;
-//    }
+  for (int i = 0 ; i < sunburstItems.size(); i++) {
+    sunburstItems.get(i).drawArc();
   }
-
-//  if (showLines) {
-//    for (int i = 0 ; i < sunburst.length; i++) {
-//      if (useBezierLine) sunburst[i].drawRelationBezier();
-//      else sunburst[i].drawRelationLine();
-//    } 
-//  }
-
-  for (int i = 0 ; i < sunburst.size(); i++) {
-    sunburst.get(i).drawDot();
-  }
-
-
-//  // ------ mouse rollover ------
-//  if (showGUI == false) {
-//    // depth level focus
-//    if (mDepth <= depthMax) {
-//      float r1 = calcEqualAreaRadius(mDepth,depthMax);
-//      float r2 = calcEqualAreaRadius(mDepth+1,depthMax);
-//      stroke(0,0,0,30);
-//      strokeWeight(5.5);
-//      ellipse(0,0,r1,r1);
-//      ellipse(0,0,r2,r2);
-//    }
-//    // rollover text
-//    if(hitTestIndex != -1) {
-//      String tex = sunburst[hitTestIndex].name+"\n";
-//      tex += nf(sunburst[hitTestIndex].fileSize,1,1)+" MB | ";
-//      tex += sunburst[hitTestIndex].lastModified+" days | ";
-//      tex += sunburst[hitTestIndex].childCount+" kids"; 
-//      float texW = textWidth(tex)*1.2;
-//      fill(0,0,0);
-//      int offset = 5;
-//      rect(mX+offset,mY+offset,texW+4,textAscent()*3.6);
-//      fill(0,0,100);
-//      text(tex.toUpperCase(),mX+offset+2,mY+offset+2);
-//    }
-//  }
-  
-  
-//  ellipseMode(CENTER);
-//  arc(0, 0, 100, 100, 0, PI / 4);
-//  ellipseMode(RADIUS);
-
-  
-
-
   popMatrix();
 
   if (savePDF) {
@@ -249,59 +148,35 @@ void draw() {
   drawGUI();
 }
 
-void generateIcon (int layerCount) {
+void generateSymbol (int layerCount) {
   
-  sunburst.clear();
+  sunburstItems.clear();
 
   for (int i = 0; i < layerCount; i++) {
     if (i == 0) {
       RadialLayerItem radialForm = new RadialLayerItem(null);
       radialLayerItems.add(radialForm);
-      sunburst.add(radialForm.createSunburstItem());
+      sunburstItems.add(radialForm.generateSunburstItem());
       println("draw 1");
     } else {
       RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
       radialLayerItems.add(radialForm);
-      sunburst.add(radialForm.createSunburstItem());
+      sunburstItems.add(radialForm.generateSunburstItem());
       println("draw 2");
     }
-  } 
-
-  // Initialize icon (i.e., the sunburst diagram)
-//  sunburst.add(radialForm.createSunburstItem());
-//  sunburst.add(radialForm2.createSunburstItem());
-//  sunburst.add(radialForm3.createSunburstItem());
+  }
 
   // mine sunburst -> get min and max values 
   // reset the old values, without the root element
   depthMax = 0;
-//  lastModifiedOldest = lastModifiedYoungest = 0; 
-//  fileSizeMin = fileSizeMax = 0;
-//  childCountMin = childCountMax = 0;
-  for (int i = 1 ; i < sunburst.size(); i++) {
-    depthMax = max(sunburst.get(i).depth, depthMax);
-//    lastModifiedOldest = max(sunburst[i].lastModified, lastModifiedOldest);
-//    lastModifiedYoungest = min(sunburst[i].lastModified, lastModifiedYoungest);
-//    fileSizeMin = min(sunburst[i].fileSize, fileSizeMin);
-//    fileSizeMax = max(sunburst[i].fileSize, fileSizeMax);
-//    childCountMin = min(sunburst[i].childCount, childCountMin);
-//    childCountMax = max(sunburst[i].childCount, childCountMax);
+  for (int i = 1 ; i < sunburstItems.size(); i++) {
+    depthMax = max(sunburstItems.get(i).depth, depthMax);
   }
-
-//  // update vars 
-//  for (int i = 0 ; i < sunburst.length; i++) {
-//    sunburst[i].update(mappingMode);
-//  }
-}
-
-// ------ returns radiuses to have equal areas in each depth ------
-float calcEqualAreaRadius (int theDepth, int theDepthMax){
-  return sqrt (theDepth * pow(height/2, 2) / (theDepthMax+1));
 }
 
 // ------ returns radiuses in a linear way ------
-float calcAreaRadius (int theDepth, int theDepthMax){
-  return map(theDepth, 0,theDepthMax+1, 0,height/2);
+float calcAreaRadius(int theDepth, int theDepthMax) {
+  return map(theDepth, 0, theDepthMax+1, 0, height/2);
 }
 
 
@@ -313,24 +188,6 @@ void keyReleased() {
   
   if (key == 'r' || key == 'R') {
     initialize = true;
-  }
-
-  if (key == '1') {
-    mappingMode = 1;
-    frame.setTitle("last modified: old / young files, global");
-  }  
-  if (key == '2') {
-    mappingMode = 2;
-    frame.setTitle("file size: big / small files, global");
-  }  
-  if (key == '3') {
-    mappingMode = 3;
-    frame.setTitle("local folder file size: big / small files, each folder independent");
-  }
-  if (key == '1' || key == '2' || key == '3') {
-//    for (int i = 0 ; i < sunburst.si; i++) {
-//      sunburst[i].update(mappingMode);
-//    }
   }
 
   if (key=='m' || key=='M') {

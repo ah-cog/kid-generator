@@ -25,20 +25,20 @@ void setupGUI() {
   int ti = 0;
   int posY = 0;
 
-  ranges[ri++] = controlP5.addRange("file hue range",0,360,hueStart,hueEnd,left,top+posY+0,len,15);
-  ranges[ri++] = controlP5.addRange("file saturation range",0,100,saturationStart,saturationEnd,left,top+posY+20,len,15);
-  ranges[ri++] = controlP5.addRange("file brightness range",0,100,brightnessStart,brightnessEnd,left,top+posY+40,len,15);
+//  ranges[ri++] = controlP5.addRange("file hue range",0,360,hueStart,hueEnd,left,top+posY+0,len,15);
+//  ranges[ri++] = controlP5.addRange("file saturation range",0,100,saturationStart,saturationEnd,left,top+posY+20,len,15);
+//  ranges[ri++] = controlP5.addRange("file brightness range",0,100,brightnessStart,brightnessEnd,left,top+posY+40,len,15);
   posY += 70;
 
-  ranges[ri++] = controlP5.addRange("folder brightness range",0,100,folderBrightnessStart,folderBrightnessEnd,left,top+posY+0,len,15);
-  ranges[ri++] = controlP5.addRange("folder stroke brightness range",0,100,folderStrokeBrightnessStart,folderStrokeBrightnessEnd,left,top+posY+20,len,15);
+//  ranges[ri++] = controlP5.addRange("folder brightness range",0,100,folderBrightnessStart,folderBrightnessEnd,left,top+posY+0,len,15);
+//  ranges[ri++] = controlP5.addRange("folder stroke brightness range",0,100,folderStrokeBrightnessStart,folderStrokeBrightnessEnd,left,top+posY+20,len,15);
   posY += 50;
 
   sliders[si++] = controlP5.addSlider("folderArcScale",0,1,left,top+posY+0,len,15);
   sliders[si++] = controlP5.addSlider("fileArcScale",0,1,left,top+posY+20,len,15);
   posY += 50;
 
-  ranges[ri++] = controlP5.addRange("stroke weight range",0,10,strokeWeightStart,strokeWeightEnd,left,top+posY+0,len,15);
+//  ranges[ri++] = controlP5.addRange("stroke weight range",0,10,strokeWeightStart,strokeWeightEnd,left,top+posY+0,len,15);
   posY += 30;
 
   sliders[si++] = controlP5.addSlider("dotSize",0,10,left,top+posY+0,len,15);
@@ -48,14 +48,14 @@ void setupGUI() {
   sliders[si++] = controlP5.addSlider("backgroundBrightness",0,100,left,top+posY+0,len,15);
   posY += 30;
 
-  toggles[ti] = controlP5.addToggle("showArcs",showArcs,left+0,top+posY,15,15);
-  toggles[ti++].setLabel("show Arcs");
-  toggles[ti] = controlP5.addToggle("showLines",showLines,left+0,top+posY+20,15,15);
-  toggles[ti++].setLabel("show Lines");
-  toggles[ti] = controlP5.addToggle("useBezierLine",useBezierLine,left+0,top+posY+40,15,15);
-  toggles[ti++].setLabel("Bezier / Line");
-  toggles[ti] = controlP5.addToggle("useArc",useArc,left+0,top+posY+60,15,15);
-  toggles[ti++].setLabel("Arc / Rect");
+//  toggles[ti] = controlP5.addToggle("showArcs",showArcs,left+0,top+posY,15,15);
+//  toggles[ti++].setLabel("show Arcs");
+//  toggles[ti] = controlP5.addToggle("showLines",showLines,left+0,top+posY+20,15,15);
+//  toggles[ti++].setLabel("show Lines");
+//  toggles[ti] = controlP5.addToggle("useBezierLine",useBezierLine,left+0,top+posY+40,15,15);
+//  toggles[ti++].setLabel("Bezier / Line");
+//  toggles[ti] = controlP5.addToggle("useArc",useArc,left+0,top+posY+60,15,15);
+//  toggles[ti++].setLabel("Arc / Rect");
 
 
   for (int i = 0; i < si; i++) {
@@ -97,40 +97,35 @@ void drawGUI(){
 // called on every change of the gui
 void controlEvent(ControlEvent theControlEvent) {
   //println("got a control event from controller with id "+theControlEvent.controller().id());
-  if(theControlEvent.controller().name().equals("file hue range")) {
-    float[] f = theControlEvent.controller().arrayValue();
-    hueStart = f[0];
-    hueEnd = f[1];
-  }
-  if(theControlEvent.controller().name().equals("file saturation range")) {
-    float[] f = theControlEvent.controller().arrayValue();
-    saturationStart = f[0];
-    saturationEnd = f[1];
-  }
-  if(theControlEvent.controller().name().equals("file brightness range")) {
-    float[] f = theControlEvent.controller().arrayValue();
-    brightnessStart = f[0];
-    brightnessEnd = f[1];
-  }
-  if(theControlEvent.controller().name().equals("folder brightness range")) {
-    float[] f = theControlEvent.controller().arrayValue();
-    folderBrightnessStart = f[0];
-    folderBrightnessEnd = f[1];
-  }
-  if(theControlEvent.controller().name().equals("folder stroke brightness range")) {
-    float[] f = theControlEvent.controller().arrayValue();
-    folderStrokeBrightnessStart = f[0];
-    folderStrokeBrightnessEnd = f[1];
-  }
-  if(theControlEvent.controller().name().equals("stroke weight range")) {
-    float[] f = theControlEvent.controller().arrayValue();
-    strokeWeightStart = f[0];
-    strokeWeightEnd = f[1];
-  }
-
-//  // update vars 
-//  for (int i = 0 ; i < sunburst.length; i++) {
-//    sunburst[i].update(mappingMode);
+//  if(theControlEvent.controller().name().equals("file hue range")) {
+//    float[] f = theControlEvent.controller().arrayValue();
+//    hueStart = f[0];
+//    hueEnd = f[1];
+//  }
+//  if(theControlEvent.controller().name().equals("file saturation range")) {
+//    float[] f = theControlEvent.controller().arrayValue();
+//    saturationStart = f[0];
+//    saturationEnd = f[1];
+//  }
+//  if(theControlEvent.controller().name().equals("file brightness range")) {
+//    float[] f = theControlEvent.controller().arrayValue();
+//    brightnessStart = f[0];
+//    brightnessEnd = f[1];
+//  }
+//  if(theControlEvent.controller().name().equals("folder brightness range")) {
+//    float[] f = theControlEvent.controller().arrayValue();
+//    folderBrightnessStart = f[0];
+//    folderBrightnessEnd = f[1];
+//  }
+//  if(theControlEvent.controller().name().equals("folder stroke brightness range")) {
+//    float[] f = theControlEvent.controller().arrayValue();
+//    folderStrokeBrightnessStart = f[0];
+//    folderStrokeBrightnessEnd = f[1];
+//  }
+//  if(theControlEvent.controller().name().equals("stroke weight range")) {
+//    float[] f = theControlEvent.controller().arrayValue();
+//    strokeWeightStart = f[0];
+//    strokeWeightEnd = f[1];
 //  }
 }
 
