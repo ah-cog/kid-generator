@@ -83,13 +83,13 @@ boolean initialize = true;
 color arcStrokeColor;
 color arcFillColor;
 
-float layerOneAngle = 1.84;
+float layerOneAngle = 1.59; // 1.84;
 float layerOneLength = 5.57;
 float layerTwoAngle = 3.07;
 float layerTwoLength = 3.66;
 float layerThreeAngle = 1.84;
-float layerThreeLength = 5.13;
-float layerOffset = 0.2 * PI;
+float layerThreeLength = 4.48; // 5.13;
+float layerOffset = 0.0; // 0.2 * PI;
 
 boolean showBackground = false;
 
@@ -163,8 +163,11 @@ void generateSymbol (int layerCount) {
   
   sunburstItems.clear();
   
-  color negativeSpaceColor = color(random(0, 360), 100, 100);
-  float arcWidth = 101; // random(50, 120);
+  color negativeSpaceColor = color(0, 0, 100);
+  float arcWidth = 101; // random(50, 120); // TODO: Make this a parameter in the generator!
+  
+  float actualLayerOneAngle = layerOneAngle;
+  float actualLayerTwoAngle = layerTwoAngle;
 
   for (int i = 0; i < layerCount; i++) {
     if (i == 0) {
@@ -173,9 +176,11 @@ void generateSymbol (int layerCount) {
       radialForm.setArcWidth(arcWidth);
       radialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle + layerOffset * PI);
       radialForm.distance = random(layerOneLength - layerOffset * PI, layerOneLength + layerOffset * PI);
+      actualLayerOneAngle = radialForm.angle; // TODO: hack! make this better!
       radialLayerItems.add(radialForm);
       sunburstItems.add(radialForm.generateSunburstItem());
 //      sunburstItems.add(radialForm.generateNegativeSunburstItem());
+
       println("draw 1");
     } else {
       RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
@@ -184,6 +189,7 @@ void generateSymbol (int layerCount) {
       radialForm.setArcWidth(arcWidth);
       if (i == 1) {
         radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
+        actualLayerTwoAngle = radialForm.angle; // TODO: hack! make this better!
         radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
       } else if (i == 2) {
         radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
@@ -195,6 +201,21 @@ void generateSymbol (int layerCount) {
       println("draw 2");
     }
   }
+  
+  // Add "second arm" arc segment
+  RadialLayerItem secondaryRadialForm = new RadialLayerItem(null);
+  secondaryRadialForm.layerNumber = -1;
+  // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
+  secondaryRadialForm.setArcWidth(arcWidth); // secondaryRadialForm.setArcWidth(0.5 * arcWidth);
+  // secondaryRadialForm.angle = random(layerOneAngle - /*layerOffset*/ 0.15 * PI, layerOneAngle + /*layerOffset*/ 0.15 * PI);
+  secondaryRadialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle - layerOffset * PI) - 0.005 * PI;
+  // secondaryRadialForm.distance = random(0.5 * QUARTER_PI, QUARTER_PI);
+//  actualLayerTwoAngle
+  secondaryRadialForm.distance = random(0, (actualLayerTwoAngle - actualLayerOneAngle) + layerOffset * PI); // actualLayerTwoAngle + layerOffset * PI);
+  radialLayerItems.add(secondaryRadialForm);
+  SunburstItem sunburstItem2 = secondaryRadialForm.generateSunburstItem();
+  sunburstItem2.radius = 150; // random(100, 200); // 150; // calcAreaRadius(depth, depthMax);
+  sunburstItems.add(sunburstItem2);
 
   // mine sunburst -> get min and max values 
   // reset the old values, without the root element

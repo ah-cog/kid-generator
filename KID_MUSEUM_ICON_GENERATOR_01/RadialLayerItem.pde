@@ -1,6 +1,6 @@
 class RadialLayerItem {
 
-  int layerNumber = 3;
+  int layerNumber = 1;
   
   RadialLayerItem parent;
   RadialLayerItem child;
@@ -63,7 +63,7 @@ class RadialLayerItem {
     sunburstItem.setColor(this.strokeColor);
     sunburstItem.setNegativeColor(this.negativeStrokeColor);
     sunburstItem.setArcWidth(this.arcWidth);
-    return (sunburstItem);
+    return sunburstItem;
   }
 
 }

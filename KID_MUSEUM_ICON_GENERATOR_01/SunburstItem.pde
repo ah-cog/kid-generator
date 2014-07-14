@@ -113,6 +113,39 @@ class SunburstItem {
         ellipse(0, 0, arcWidth, arcWidth);
         noFill();
       }
+    } else {
+      // Draw the "second arm" arc segment
+      
+      println("arcWidth =", arcWidth);
+      println("arcScale =", arcScale);
+
+      strokeWeight(arcWidth * arcScale); // strokeWeight(depthWeight * theFileScale); 
+      // arcRadius = radius + depthWeight*theFileScale / 2;
+      //radius = armArcSegmentRadius; // 150; // calcAreaRadius(depth, depthMax);
+      x  = cos(angleCenter) * radius;
+      y  = sin(angleCenter) * radius;
+      float startX  = cos(angleStart) * radius;
+      float startY  = sin(angleStart) * radius;  
+      float endX  = cos(angleEnd) * radius;
+      float endY  = sin(angleEnd) * radius; 
+      arcLength = dist(startX, startY, endX, endY);
+      arcRadius = radius + arcWidth; // *theFileScale/2;
+      
+      println("radius =", radius);
+      println("arcRadius =", arcRadius);
+      
+      //stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
+      stroke(color(0, 0, 100));
+      noFill(); // fill(arcFillColor);
+      
+      println("angleStart =", angleStart);
+      println("angleEnd =", angleEnd);
+      println("arcLength =", arcLength);
+      
+//      angleEnd = (depth / 3.0) * PI;
+      
+      //arc(0,0, arcRadius,arcRadius, angleStart, angleEnd);
+      arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
     }
   }
 
