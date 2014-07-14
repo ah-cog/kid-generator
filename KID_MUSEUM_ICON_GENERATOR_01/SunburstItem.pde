@@ -85,8 +85,74 @@ class SunburstItem {
       
 //      angleEnd = (depth / 3.0) * PI;
       
-      //arc(0,0, arcRadius,arcRadius, angleStart, angleEnd);
-      arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
+      // NOTE: This is the original drawing method used. Parameterize for "final" generator?
+      // arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
+      
+      // Manually draw the arc geometry
+      stroke(color(0, 0, 0));
+      strokeWeight(2.0);
+      fill(color(240, 100, 100));
+//      float x1 = (arcRadius - (arcWidth / 2)) * cos(angleStart);
+//      float y1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
+//      float x2 = (arcRadius + (arcWidth / 2)) * cos(angleStart);
+//      float y2 = (arcRadius + (arcWidth / 2)) * sin(angleStart);
+//      arc(0, 0, arcRadius - (arcWidth / 2), arcRadius - (arcWidth / 2), angleStart, angleEnd); // draw inner arc segment
+//      line(x1, y1, x2, y2); // line(x1, y1, x2, y2);
+//      float x3 = (arcRadius - (arcWidth / 2)) * cos(angleEnd);
+//      float y3 = (arcRadius - (arcWidth / 2)) * sin(angleEnd);
+//      float x4 = (arcRadius + (arcWidth / 2)) * cos(angleEnd);
+//      float y4 = (arcRadius + (arcWidth / 2)) * sin(angleEnd);
+//      line(x3, y3, x4, y4); // line(x1, y1, x2, y2);
+//      arc(0, 0, arcRadius + (arcWidth / 2), arcRadius + (arcWidth / 2), angleStart, angleEnd); // draw outer arc segment
+      
+//      smooth();
+//      fill(206,76,52);
+      float angleArcStep = PI / 180 * 10;
+
+      float degreesInCircle = 360;
+      float beginAngleInDegrees = (angleStart / TWO_PI) * degreesInCircle;
+      float endAngleInDegrees = (angleEnd / TWO_PI) * degreesInCircle;
+      float radiansPerDegree = TWO_PI / degreesInCircle;
+      int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
+      
+      // Draw the layer's inner arc
+      h.beginShape();
+      for(int i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
+        float angleInRadians = i * radiansPerDegree;
+        float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);
+        float yy = (arcRadius - (arcWidth / 2)) * sin(angleInRadians);
+        h.vertex(xx, yy);
+//        line(x1, y1, x2, y2);
+      }
+//      h.endShape();
+      
+      // Draw arc boundary line connecting inner arc to outer arc
+      // TODO: Optionally, draw a "rounded corner" rather than a "sharp corner". Repeat for other layer bounding line.
+      float xx1, yy1;
+      float xx2, yy2;
+      xx1 = (arcRadius - (arcWidth / 2)) * cos(angleEnd);
+      yy1 = (arcRadius - (arcWidth / 2)) * sin(angleEnd);
+      xx2 = (arcRadius + (arcWidth / 2)) * cos(angleEnd);
+      yy2 = (arcRadius + (arcWidth / 2)) * sin(angleEnd);
+      h.line(xx1, yy1, xx2, yy2);
+      
+      // Draw the layer's outer arc
+//      h.beginShape();
+      for(int i = int(endAngleInDegrees); i >= int(beginAngleInDegrees); i -= angleArcStepInDegrees) {
+        float angleInRadians = i * radiansPerDegree;
+        float xx = (arcRadius + (arcWidth / 2)) * cos(angleInRadians);
+        float yy = (arcRadius + (arcWidth / 2)) * sin(angleInRadians);
+        h.vertex(xx, yy);
+//        line(x1, y1, x2, y2);
+      }
+      
+      xx1 = (arcRadius - (arcWidth / 2)) * cos(angleStart);
+      yy1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
+      xx2 = (arcRadius + (arcWidth / 2)) * cos(angleStart);
+      yy2 = (arcRadius + (arcWidth / 2)) * sin(angleStart);
+      h.line(xx1, yy1, xx2, yy2);
+      
+      h.endShape();
       
       // Draw background
       if (this.enableBackground) {
@@ -104,7 +170,8 @@ class SunburstItem {
 //        while (newStartAngle > newEndAngle) {
 //          newStartAngle = newStartAngle % PI;
 //        }
-        arcWrap(0, 0, arcRadius, arcRadius, newStartAngle - this.negativeArcPadding, newEndAngle + this.negativeArcPadding); // normaly arc should work
+        // NOTE: This is the original drawing method used. Parameterize for "final" generator?
+        // arcWrap(0, 0, arcRadius, arcRadius, newStartAngle - this.negativeArcPadding, newEndAngle + this.negativeArcPadding); // normaly arc should work
         
         // Fill in the "negative circle" at the center
         fill(this.negativeStrokeColor);
@@ -164,31 +231,3 @@ class SunburstItem {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

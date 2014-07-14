@@ -55,7 +55,9 @@ import controlP5.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.io.File;
+import org.gicentre.handy.*;
 
+HandyRenderer h;
 
 // ------ ControlP5 ------
 ControlP5 controlP5;
@@ -97,6 +99,15 @@ void setup() {
   size(800, 800); // size(800, 800, OPENGL);
   // hint(DISABLE_DEPTH_TEST);
   
+  smooth();
+  
+  h = new HandyRenderer(this);
+//  h = HandyPresets.createWaterAndInk(this);
+//  h1 = HandyPresets.createPencil(this);
+//  h2 = HandyPresets.createColouredPencil(this);
+//  h3 = HandyPresets.createWaterAndInk(this);
+//  h4 = HandyPresets.createMarker(this);
+  
   sunburstItems = new ArrayList<SunburstItem>();
   radialLayerItems = new ArrayList<RadialLayerItem>();
   
@@ -112,6 +123,8 @@ void setup() {
   frame.setTitle("KID Museum Icon Generator 1");
 }
 
+long randomSeed = 1234;
+
 void draw() {
   
   if (savePDF) {
@@ -125,9 +138,19 @@ void draw() {
     
     arcStrokeColor = color(240, 100, 50); // color(360, 100, 100); // color(random(0, 360), 100, 100);
     arcFillColor = color(random(0, 360), 100, 100);
+    
+    // Initialize random number generator seed
+    randomSeed = int(random(0, 2147483647));
+    
+    h.setHachurePerturbationAngle(15);
+    h.setRoughness(1);
+    h.setFillGap(0.5);
+    h.setFillWeight(0.1);
   }
   
-  smooth();
+  h.setSeed(randomSeed); // Set seed for Handy renderer
+  
+//  h.rect(75,50,150,100);
 
   pushMatrix();
   colorMode(HSB, 360, 100, 100, 100);
@@ -163,7 +186,7 @@ void generateSymbol (int layerCount) {
   
   sunburstItems.clear();
   
-  color positiveColor = color(random(190, 290), random(10, 100), random(50, 100));
+  color positiveColor = color(245, 100, 100); // color(random(190, 290), random(10, 100), random(50, 100));
   color negativeSpaceColor = color(0, 0, 100);
   float arcWidth = 101; // random(50, 120); // TODO: Make this a parameter in the generator!
   
