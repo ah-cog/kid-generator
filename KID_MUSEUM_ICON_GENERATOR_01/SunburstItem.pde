@@ -20,6 +20,12 @@ class SunburstItem {
   
   boolean enableNegativeSpaceColor = false;
   float negativeArcPadding = 0.01 * PI;
+  
+  boolean enablePartialOutline = true;
+  boolean drawDistalOutline = true;
+  boolean bisectDistalOutline = true;
+  boolean drawOuterArc = false;
+  boolean drawProximalBoundaryLine = false;
 
   // ------ constructor ------
   SunburstItem (int theDepth, float theAngle, float theExtension) {
@@ -90,7 +96,7 @@ class SunburstItem {
       
       // Manually draw the arc geometry
       stroke(color(0, 0, 0));
-      strokeWeight(2.0);
+      strokeWeight(1.0);
       fill(color(240, 100, 100));
 //      float x1 = (arcRadius - (arcWidth / 2)) * cos(angleStart);
 //      float y1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
@@ -181,8 +187,8 @@ class SunburstItem {
     } else {
       // Draw the "second arm" arc segment
       
-      println("arcWidth =", arcWidth);
-      println("arcScale =", arcScale);
+//      println("arcWidth =", arcWidth);
+//      println("arcScale =", arcScale);
 
       strokeWeight(arcWidth * arcScale); // strokeWeight(depthWeight * theFileScale); 
       // arcRadius = radius + depthWeight*theFileScale / 2;
@@ -196,21 +202,133 @@ class SunburstItem {
       arcLength = dist(startX, startY, endX, endY);
       arcRadius = radius + arcWidth; // *theFileScale/2;
       
-      println("radius =", radius);
-      println("arcRadius =", arcRadius);
+//      println("radius =", radius);
+//      println("arcRadius =", arcRadius);
       
       //stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
-      stroke(color(0, 0, 100));
-      noFill(); // fill(arcFillColor);
+      stroke(color(0, 0, 0));
+      if (enablePartialOutline) {
+        noStroke();
+      } else {
+        strokeWeight(1.0);
+      }
+      fill(color(0, 0, 100)); // fill(color(240, 100, 100));
       
-      println("angleStart =", angleStart);
-      println("angleEnd =", angleEnd);
-      println("arcLength =", arcLength);
+//      println("angleStart =", angleStart);
+//      println("angleEnd =", angleEnd);
+//      println("arcLength =", arcLength);
       
 //      angleEnd = (depth / 3.0) * PI;
       
-      //arc(0,0, arcRadius,arcRadius, angleStart, angleEnd);
-      arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
+      //arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
+      
+      float angleArcStep = PI / 180 * 5;
+
+      float degreesInCircle = 360;
+      float beginAngleInDegrees = (angleStart / TWO_PI) * degreesInCircle;
+      float endAngleInDegrees = (angleEnd / TWO_PI) * degreesInCircle;
+      float radiansPerDegree = TWO_PI / degreesInCircle;
+      int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
+      
+      // Draw the layer's inner arc
+      h.beginShape();
+      for(int i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
+        float angleInRadians = i * radiansPerDegree;
+        float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);
+        float yy = (arcRadius - (arcWidth / 2)) * sin(angleInRadians);
+        h.vertex(xx, yy);
+//        line(x1, y1, x2, y2);
+      }
+//      h.endShape();
+      
+      // Draw arc boundary line connecting inner arc to outer arc
+      // TODO: Optionally, draw a "rounded corner" rather than a "sharp corner". Repeat for other layer bounding line.
+      float xx1, yy1;
+      float xx2, yy2;
+      xx1 = (arcRadius - (arcWidth / 2)) * cos(angleEnd);
+      yy1 = (arcRadius - (arcWidth / 2)) * sin(angleEnd);
+      xx2 = (arcRadius + (arcWidth / 2)) * cos(angleEnd);
+      yy2 = (arcRadius + (arcWidth / 2)) * sin(angleEnd);
+      h.line(xx1, yy1, xx2, yy2);
+      
+      // Draw the layer's outer arc
+//      h.beginShape();
+      for(int i = int(endAngleInDegrees); i >= int(beginAngleInDegrees); i -= angleArcStepInDegrees) {
+        float angleInRadians = i * radiansPerDegree;
+        float xx = (arcRadius + (arcWidth / 2)) * cos(angleInRadians);
+        float yy = (arcRadius + (arcWidth / 2)) * sin(angleInRadians);
+        h.vertex(xx, yy);
+//        line(x1, y1, x2, y2);
+      }
+      
+      xx1 = (arcRadius - (arcWidth / 2)) * cos(angleStart);
+      yy1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
+      xx2 = (arcRadius + (arcWidth / 2)) * cos(angleStart);
+      yy2 = (arcRadius + (arcWidth / 2)) * sin(angleStart);
+      h.line(xx1, yy1, xx2, yy2);
+      
+      h.endShape();
+      
+      
+      if (enablePartialOutline) {
+//        float angleArcStep = PI / 180 * 5;
+//  
+//        float degreesInCircle = 360;
+//        float beginAngleInDegrees = (angleStart / TWO_PI) * degreesInCircle;
+//        float endAngleInDegrees = (angleEnd / TWO_PI) * degreesInCircle;
+//        float radiansPerDegree = TWO_PI / degreesInCircle;
+//        int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
+
+        stroke(color(0, 0, 0));
+        strokeWeight(1.0);
+        noFill();
+        
+        // Draw the layer's inner arc
+        h.beginShape();
+        for(int i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
+          float angleInRadians = i * radiansPerDegree;
+          float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);
+          float yy = (arcRadius - (arcWidth / 2)) * sin(angleInRadians);
+          h.vertex(xx, yy);
+  //        line(x1, y1, x2, y2);
+        }
+  //      h.endShape();
+        
+        // Draw arc boundary line connecting inner arc to outer arc
+        // TODO: Optionally, draw a "rounded corner" rather than a "sharp corner". Repeat for other layer bounding line.
+//        float xx1, yy1;
+//        float xx2, yy2;
+        xx1 = (arcRadius - (arcWidth / 2)) * cos(angleEnd);
+        yy1 = (arcRadius - (arcWidth / 2)) * sin(angleEnd);
+        if (bisectDistalOutline) {
+          xx2 = (arcRadius) * cos(angleEnd);
+          yy2 = (arcRadius) * sin(angleEnd);
+        } else {
+          xx2 = (arcRadius + (arcWidth / 2)) * cos(angleEnd);
+          yy2 = (arcRadius + (arcWidth / 2)) * sin(angleEnd);
+        }
+        h.line(xx1, yy1, xx2, yy2);
+        
+        // Draw the layer's outer arc
+        if (drawOuterArc) {
+          for(int i = int(endAngleInDegrees); i >= int(beginAngleInDegrees); i -= angleArcStepInDegrees) {
+            float angleInRadians = i * radiansPerDegree;
+            float xx = (arcRadius + (arcWidth / 2)) * cos(angleInRadians);
+            float yy = (arcRadius + (arcWidth / 2)) * sin(angleInRadians);
+            h.vertex(xx, yy);
+          }
+        }
+        
+        if (drawProximalBoundaryLine) {
+          xx1 = (arcRadius - (arcWidth / 2)) * cos(angleStart);
+          yy1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
+          xx2 = (arcRadius + (arcWidth / 2)) * cos(angleStart);
+          yy2 = (arcRadius + (arcWidth / 2)) * sin(angleStart);
+          h.line(xx1, yy1, xx2, yy2);
+        }
+        
+        h.endShape();
+      }
     }
   }
 
