@@ -32,6 +32,10 @@ void setupGUI() {
   sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+80,len,15);
   sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+100,len,15);
   sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+120,len,15);
+  posY += 20;
+  sliders[si++] = controlP5.addSlider("roughness",0,100,left,top+posY+140,len,15);
+  sliders[si++] = controlP5.addSlider("arcSegmentFrequency",2,500,left,top+posY+160,len,15);
+  sliders[si++] = controlP5.addSlider("strokeWeight",1,500,left,top+posY+180,len,15);
   posY += 50;
 
 //  toggles[ti] = controlP5.addToggle("showBackground",showBackground,left+0,top+posY,15,15);

@@ -88,12 +88,20 @@ color arcFillColor;
 float layerOneAngle = 1.59; // 1.84;
 float layerOneLength = 5.57;
 float layerTwoAngle = 3.07;
-float layerTwoLength = 3.66;
+float layerTwoLength = 3.07;
 float layerThreeAngle = 1.84;
 float layerThreeLength = 4.48; // 5.13;
-float layerOffset = 0.0; // 0.2 * PI;
+float layerOffset = 0.0; // 0.2 * PI; // 0.0; // 0.2 * PI;
+
+float roughness = 1.0;
+int arcSegmentFrequency = 5;
+float strokeWeight = 1.0;
 
 boolean showBackground = false;
+
+boolean enableSketchiness = true;
+
+boolean autoSave = false;
 
 void setup() { 
   size(800, 800); // size(800, 800, OPENGL);
@@ -103,22 +111,15 @@ void setup() {
   
   h = new HandyRenderer(this);
 //  h = HandyPresets.createWaterAndInk(this);
-//  h1 = HandyPresets.createPencil(this);
-//  h2 = HandyPresets.createColouredPencil(this);
-//  h3 = HandyPresets.createWaterAndInk(this);
-//  h4 = HandyPresets.createMarker(this);
+//  h = HandyPresets.createPencil(this);
+//  h = HandyPresets.createColouredPencil(this);
+//  h = HandyPresets.createMarker(this);
   
   sunburstItems = new ArrayList<SunburstItem>();
   radialLayerItems = new ArrayList<RadialLayerItem>();
   
   setupGUI(); 
   colorMode(HSB, 360, 100, 100);
-
-  font = createFont("miso-regular.ttf", 14); // font = createFont("Arial", 14);
-  textFont(font, 12);
-  textLeading(14);
-  textAlign(LEFT, TOP);
-  cursor(CROSS);
 
   frame.setTitle("KID Museum Icon Generator 1");
 }
@@ -127,11 +128,20 @@ long randomSeed = 1234;
 
 void draw() {
   
+  if (enableSketchiness) {
+    h.setIsHandy(true);
+  } else {
+    h.setIsHandy(false);
+  }
+  
   if (savePDF) {
     println("\n"+"saving to pdf – starting");
     beginRecord(PDF, timestamp() + ".pdf");
   }
   
+  if (autoSave == true) {
+    initialize = true;
+  }
   if (initialize) {
     generateSymbol(3);
     initialize = false;
@@ -143,9 +153,9 @@ void draw() {
     randomSeed = int(random(0, 2147483647));
     
     h.setHachurePerturbationAngle(15);
-    h.setRoughness(1);
+    h.setRoughness(roughness);
     h.setFillGap(0.5); // 0.5
-    h.setIsAlternating(false);
+    h.setIsAlternating(true);
     h.setFillWeight(0.1); // 0.1
   }
   
@@ -159,8 +169,6 @@ void draw() {
   noFill();
   ellipseMode(RADIUS);
   strokeCap(SQUARE);
-  textFont(font, 12);
-  textLeading(14);
   textAlign(LEFT, TOP);
   smooth();
 
@@ -170,14 +178,29 @@ void draw() {
 
   // ------ draw the viz items ------
   for (int i = 0 ; i < sunburstItems.size(); i++) {
+    sunburstItems.get(i).arcSegmentFrequency = this.arcSegmentFrequency;
+    sunburstItems.get(i).strokeWeight = this.strokeWeight;
     sunburstItems.get(i).draw();
   }
+  
+  // EXPERIMENT: Concentric white circles
+//  noFill();
+//  stroke(color(0, 0, 100));
+//  int step = 10;
+//  for (int i = 0; i < 100; i++) {
+//    ellipse(0, 0, 100 + step * i, 100 + step * i);
+//  }
+  
   popMatrix();
 
   if (savePDF) {
     savePDF = false;
     endRecord();
     println("saving to pdf – done");
+  }
+  
+  if (autoSave == true) {
+    saveFrame("data/output/"+timestamp()+"_##.png");
   }
 
   drawGUI();

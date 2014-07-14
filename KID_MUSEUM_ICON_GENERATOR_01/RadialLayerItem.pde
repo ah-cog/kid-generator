@@ -53,15 +53,15 @@ class RadialLayerItem {
       this.distance = random(0.5 * TWO_PI, 0.99 * TWO_PI); // 0.7 * TWO_PI
     }
     
-    this.strokeColor = color(240, 100, 50); // color(360, 100, 100);
-    this.negativeStrokeColor = color(180, 100, 100);
+    this.strokeColor = color(240, 100, 100); // color(360, 100, 100);
+    this.negativeStrokeColor = color(0, 0, 100);
   }
   
   // Breadth First
   SunburstItem generateSunburstItem() {
     SunburstItem sunburstItem = new SunburstItem(this.layerNumber, this.angle, this.distance);
-    sunburstItem.setColor(this.strokeColor);
-    sunburstItem.setNegativeColor(this.negativeStrokeColor);
+//    sunburstItem.setColor(this.strokeColor);
+//    sunburstItem.setNegativeColor(this.negativeStrokeColor);
     sunburstItem.setArcWidth(this.arcWidth);
     return sunburstItem;
   }
