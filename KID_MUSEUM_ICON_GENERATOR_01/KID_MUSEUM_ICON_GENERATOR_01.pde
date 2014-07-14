@@ -1,8 +1,8 @@
 // KID_MUSEUM_ICON_GENERATOR.pde
 // RadialLayerItem.pde, GUI.pde, SunburstItem.pde
 //
-// This sketch was a collaborative effort by Michael Gubbels and 
-// Michael Smith-Welch for KID Museum.
+// This sketch was a collaborative effort by
+// Michael Gubbels and Michael Smith-Welch for KID Museum.
 // 
 // Copyright 2014 Michael Gubbels, Michael Smith-Welch
 //
@@ -31,20 +31,8 @@
 // calcEqualAreaRadius function was done by Prof. Franklin Hernandez-Castro
 
 /**
- * press 'o' to select an input folder!
- * take care of very big folders, loading will take up to several minutes.
- * 
- * program takes a file directory (hierarchical tree) as input 
- * and displays all files and folders with sunburst technique.
- * 
- * MOUSE
- * position x/y               : rollover -> get meta information
- * 
  * KEYS
- * o                          : select an input folder
- * 1                          : mappingMode -> last modified
- * 2                          : mappingMode -> file size
- * 3                          : mappingMode -> local folder file size
+ * r                          : re-generate
  * m                          : toogle, menu open/close
  * s                          : save png
  * p                          : save pdf
@@ -80,10 +68,14 @@ ArrayList<RadialLayerItem> radialLayerItems;
 Calendar now = Calendar.getInstance();
 int depthMax;
 
-
 boolean initialize = true;
+boolean recordFrames = false;
+int layerCount = 3;
+
 color arcStrokeColor;
 color arcFillColor;
+
+float sceneRotation = 0;
 
 float layerOneAngle = 1.59; // 1.84;
 float layerOneLength = 5.57;
@@ -93,15 +85,14 @@ float layerThreeAngle = 1.84;
 float layerThreeLength = 4.48; // 5.13;
 float layerOffset = 0.0; // 0.2 * PI; // 0.0; // 0.2 * PI;
 
-float roughness = 1.0;
-int arcSegmentFrequency = 5;
-float strokeWeight = 1.0;
+boolean enableSketchiness = true;
+float roughness = 1.0; // e.g., 1.0
+float fillGap = 0.5; // e.g., 0.5
+int arcSegmentFrequency = 5; // e.g., 5, 10
+boolean enableOutline = false;
+float strokeWeight = 1.0; // e.g., 1.0
 
 boolean showBackground = false;
-
-boolean enableSketchiness = true;
-
-boolean autoSave = false;
 
 void setup() { 
   size(800, 800); // size(800, 800, OPENGL);
@@ -118,7 +109,7 @@ void setup() {
   sunburstItems = new ArrayList<SunburstItem>();
   radialLayerItems = new ArrayList<RadialLayerItem>();
   
-  setupGUI(); 
+  setupInterface(); 
   colorMode(HSB, 360, 100, 100);
 
   frame.setTitle("KID Museum Icon Generator 1");
@@ -136,15 +127,16 @@ void draw() {
   
   if (savePDF) {
     println("\n"+"saving to pdf – starting");
-    beginRecord(PDF, timestamp() + ".pdf");
+    beginRecord(PDF, "data/output/" + timestamp() + ".pdf");
   }
   
-  if (autoSave == true) {
+  if (recordFrames == true) {
     initialize = true;
   }
+  
   if (initialize) {
-    generateSymbol(3);
-    initialize = false;
+    generateIcon(layerCount);
+    // initialize = false;
     
     arcStrokeColor = color(240, 100, 50); // color(360, 100, 100); // color(random(0, 360), 100, 100);
     arcFillColor = color(random(0, 360), 100, 100);
@@ -154,14 +146,12 @@ void draw() {
     
     h.setHachurePerturbationAngle(15);
     h.setRoughness(roughness);
-    h.setFillGap(0.5); // 0.5
+    h.setFillGap(fillGap); // 0.5
     h.setIsAlternating(true);
     h.setFillWeight(0.1); // 0.1
   }
   
   h.setSeed(randomSeed); // Set seed for Handy renderer
-  
-//  h.rect(75,50,150,100);
 
   pushMatrix();
   colorMode(HSB, 360, 100, 100, 100);
@@ -174,12 +164,14 @@ void draw() {
 
   // Adjust our view onto the generated visuals
   translate(width / 2, height / 2); //  translate(width / 2, height / 2, -200);
+  rotate(sceneRotation);
   scale(0.8);
 
   // ------ draw the viz items ------
   for (int i = 0 ; i < sunburstItems.size(); i++) {
     sunburstItems.get(i).arcSegmentFrequency = this.arcSegmentFrequency;
     sunburstItems.get(i).strokeWeight = this.strokeWeight;
+    sunburstItems.get(i).enableStroke = this.enableOutline;
     sunburstItems.get(i).draw();
   }
   
@@ -199,14 +191,17 @@ void draw() {
     println("saving to pdf – done");
   }
   
-  if (autoSave == true) {
-    saveFrame("data/output/"+timestamp()+"_##.png");
+  if (initialize) {
+    if (recordFrames == true) {
+      saveFrame("data/output/"+timestamp()+"_##.png");
+    }
+    initialize = false;
   }
 
   drawGUI();
 }
 
-void generateSymbol (int layerCount) {
+void generateIcon (int layerCount) {
   
   sunburstItems.clear();
   
@@ -275,6 +270,7 @@ void generateSymbol (int layerCount) {
   }
 }
 
+
 // ------ returns radiuses in a linear way ------
 float calcAreaRadius(int theDepth, int theDepthMax) {
   return map(theDepth, 0, theDepthMax+1, 0, height/2);
@@ -283,31 +279,25 @@ float calcAreaRadius(int theDepth, int theDepthMax) {
 
 // ------ interaction ------
 void keyReleased() {
-  if (key == 's' || key == 'S') saveFrame("data/output/"+timestamp()+"_##.png");
-  if (key == 'p' || key == 'P') savePDF = true;
-//  if (key == 'o' || key == 'O') selectFolder("please select a folder", "setInputFolder");
-  
-  if (key == 'r' || key == 'R') {
-    initialize = true;
+  if (key == CODED) {
+    if (keyCode == RIGHT) {
+      initialize = true;
+    } else if (keyCode == LEFT) {
+      // TODO: Recover the previously generated output (i.e., recover the previous parameterization state).
+    } 
   }
+  
+  if (key == 'r' || key == 'R') { recordFrames = !recordFrames; }
+  if (key == 's' || key == 'S') { saveFrame("data/output/"+timestamp()+"_##.png"); }
+  if (key == 'p' || key == 'P') { savePDF = true; }
 
-  if (key=='m' || key=='M') {
+  if (key == 'm' || key == 'M') {
     showGUI = controlP5.group("menu").isOpen();
     showGUI = !showGUI;
   }
-  if (showGUI) controlP5.group("menu").open();
-  else controlP5.group("menu").close();
+  if (showGUI) { controlP5.group("menu").open(); }
+  else { controlP5.group("menu").close(); }
 }
-
-
-//void mouseEntered(MouseEvent e) {
-//  loop();
-//}
-//
-//void mouseExited(MouseEvent e) {
-//  noLoop();
-//}
-
 
 String timestamp() {
   return String.format("%1$ty%1$tm%1$td_%1$tH%1$tM%1$tS", Calendar.getInstance());

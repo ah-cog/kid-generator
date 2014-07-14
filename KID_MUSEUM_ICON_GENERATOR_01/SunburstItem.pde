@@ -132,19 +132,19 @@ class SunburstItem {
   // fix for arc
   // it seems that the arc functions has a problem with very tiny angles ... 
   // arcWrap is a quick hack to get rid of this problem
-  void arcWrap (float theX, float theY, float theW, float theH, float theA1, float theA2) {
-    if (arcLength > 2.5) {
-      arc(theX,theY, theW,theH, theA1, theA2);
-      // TODO: (Possibly) Replace with custom drawing function (e.g., Bezier curve estimation)
-    } else {
-      strokeWeight(arcLength);
-      pushMatrix();
-      rotate(angleCenter);
-      translate(radius,0);
-      line(0,0, (theW-radius)*2,0);
-      popMatrix();
-    }
-  }
+//  void arcWrap (float theX, float theY, float theW, float theH, float theA1, float theA2) {
+//    if (arcLength > 2.5) {
+//      arc(theX,theY, theW,theH, theA1, theA2);
+//      // TODO: (Possibly) Replace with custom drawing function (e.g., Bezier curve estimation)
+//    } else {
+//      strokeWeight(arcLength);
+//      pushMatrix();
+//      rotate(angleCenter);
+//      translate(radius,0);
+//      line(0,0, (theW-radius)*2,0);
+//      popMatrix();
+//    }
+//  }
   
   void drawLayer(float arcRadius) {
     float angleArcStep = PI / 180 * this.arcSegmentFrequency;
@@ -156,7 +156,7 @@ class SunburstItem {
     int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
     
     // Draw the layer's inner arc
-    h.beginShape();
+    h.beginShape(POLYGON);
     for(int i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
       float angleInRadians = i * radiansPerDegree;
       float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);

@@ -1,4 +1,4 @@
-void setupGUI() {
+void setupInterface() {
   color activeColor = color(0,130,164);
   controlP5 = new ControlP5(this);
   //controlP5.setAutoDraw(false);
@@ -12,7 +12,7 @@ void setupGUI() {
   ctrl.setColorLabel(color(255));
   ctrl.close();
 
-  sliders = new Slider[10];
+  sliders = new Slider[20];
   ranges = new Range[10];
   toggles = new Toggle[10];
 
@@ -25,21 +25,25 @@ void setupGUI() {
   int ti = 0;
   int posY = 0;
 
-  sliders[si++] = controlP5.addSlider("layerOneAngle",0,TWO_PI,left,top+posY+0,len,15);
-  sliders[si++] = controlP5.addSlider("layerOneLength",0,TWO_PI,left,top+posY+20,len,15);
-  sliders[si++] = controlP5.addSlider("layerTwoAngle",0,TWO_PI,left,top+posY+40,len,15);
-  sliders[si++] = controlP5.addSlider("layerTwoLength",0,TWO_PI,left,top+posY+60,len,15);
-  sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+80,len,15);
-  sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+100,len,15);
-  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+120,len,15);
+  sliders[si++] = controlP5.addSlider("sceneRotation",0,TWO_PI,left,top+posY+0,len,15);
   posY += 20;
-  sliders[si++] = controlP5.addSlider("roughness",0,100,left,top+posY+140,len,15);
-  sliders[si++] = controlP5.addSlider("arcSegmentFrequency",2,500,left,top+posY+160,len,15);
-  sliders[si++] = controlP5.addSlider("strokeWeight",1,500,left,top+posY+180,len,15);
+  sliders[si++] = controlP5.addSlider("layerOneAngle",0,TWO_PI,left,top+posY+20,len,15);
+  sliders[si++] = controlP5.addSlider("layerOneLength",0,TWO_PI,left,top+posY+40,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoAngle",0,TWO_PI,left,top+posY+60,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoLength",0,TWO_PI,left,top+posY+80,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+100,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+120,len,15);
+  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+140,len,15);
+  posY += 20;
+  toggles[ti] = controlP5.addToggle("enableSketchiness",showBackground,left+0,top+posY+160,15,15);
+    toggles[ti++].setLabel("enable sketchiness");
+  sliders[si++] = controlP5.addSlider("roughness",0,100,left,top+posY+180,len,15);
+  sliders[si++] = controlP5.addSlider("fillGap",0,50,left,top+posY+200,len,15);
+  sliders[si++] = controlP5.addSlider("arcSegmentFrequency",2,500,left,top+posY+220,len,15);
+  toggles[ti] = controlP5.addToggle("enableOutline",showBackground,left+0,top+posY+240,15,15);
+    toggles[ti++].setLabel("enable outline");
+  sliders[si++] = controlP5.addSlider("strokeWeight",1,500,left,top+posY+260,len,15);
   posY += 50;
-
-//  toggles[ti] = controlP5.addToggle("showBackground",showBackground,left+0,top+posY,15,15);
-//  toggles[ti++].setLabel("show background");
 
 
   for (int i = 0; i < si; i++) {
