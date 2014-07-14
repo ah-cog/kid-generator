@@ -53,7 +53,7 @@ class RadialLayerItem {
       this.distance = random(0.5 * TWO_PI, 0.99 * TWO_PI); // 0.7 * TWO_PI
     }
     
-    this.strokeColor = color(360, 100, 100);
+    this.strokeColor = color(240, 100, 50); // color(360, 100, 100);
     this.negativeStrokeColor = color(180, 100, 100);
   }
   

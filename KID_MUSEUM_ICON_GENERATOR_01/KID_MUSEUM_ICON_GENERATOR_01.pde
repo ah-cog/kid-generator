@@ -123,7 +123,7 @@ void draw() {
     generateSymbol(3);
     initialize = false;
     
-    arcStrokeColor = color(360, 100, 100); // color(random(0, 360), 100, 100);
+    arcStrokeColor = color(240, 100, 50); // color(360, 100, 100); // color(random(0, 360), 100, 100);
     arcFillColor = color(random(0, 360), 100, 100);
   }
   
@@ -163,6 +163,7 @@ void generateSymbol (int layerCount) {
   
   sunburstItems.clear();
   
+  color positiveColor = color(random(190, 290), random(10, 100), random(50, 100));
   color negativeSpaceColor = color(0, 0, 100);
   float arcWidth = 101; // random(50, 120); // TODO: Make this a parameter in the generator!
   
@@ -172,6 +173,7 @@ void generateSymbol (int layerCount) {
   for (int i = 0; i < layerCount; i++) {
     if (i == 0) {
       RadialLayerItem radialForm = new RadialLayerItem(null);
+      radialForm.setColor(positiveColor);
       radialForm.setNegativeColor(negativeSpaceColor);
       radialForm.setArcWidth(arcWidth);
       radialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle + layerOffset * PI);
@@ -185,6 +187,7 @@ void generateSymbol (int layerCount) {
     } else {
       RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
       // sunburstItem.setColor(this.strokeColor);
+      radialForm.setColor(positiveColor);
       radialForm.setNegativeColor(negativeSpaceColor);
       radialForm.setArcWidth(arcWidth);
       if (i == 1) {

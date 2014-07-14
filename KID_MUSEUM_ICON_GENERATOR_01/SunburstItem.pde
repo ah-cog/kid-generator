@@ -59,9 +59,6 @@ class SunburstItem {
 //    float arcWidth = 100;
     
     if (this.depth > 0 ) {
-      
-      println("arcWidth =", arcWidth);
-      println("arcScale =", arcScale);
 
       strokeWeight(arcWidth * arcScale); // strokeWeight(depthWeight * theFileScale); 
       // arcRadius = radius + depthWeight*theFileScale / 2;
@@ -75,15 +72,16 @@ class SunburstItem {
       arcLength = dist(startX,startY, endX,endY);
       arcRadius = radius + arcWidth; // *theFileScale/2;
       
-      println("radius =", radius);
-      println("arcRadius =", arcRadius);
-      
       stroke(this.strokeColor); // stroke(arcStrokeColor);
       noFill(); // fill(arcFillColor);
       
-      println("angleStart =", angleStart);
-      println("angleEnd =", angleEnd);
-      println("arcLength =", arcLength);
+//      println("arcWidth =", arcWidth);
+//      println("arcScale =", arcScale);
+//      println("radius =", radius);
+//      println("arcRadius =", arcRadius);
+//      println("angleStart =", angleStart);
+//      println("angleEnd =", angleEnd);
+//      println("arcLength =", arcLength);
       
 //      angleEnd = (depth / 3.0) * PI;
       
