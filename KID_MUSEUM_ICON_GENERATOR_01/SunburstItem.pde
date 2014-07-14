@@ -15,6 +15,8 @@ class SunburstItem {
   color backgroundColor;
   float backgroundSize = 900;
   
+  boolean enableStroke = false;
+  float strokeWeight = 1.0; // 1.0
   color strokeColor;
   color negativeStrokeColor;
   
@@ -95,8 +97,12 @@ class SunburstItem {
       // arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
       
       // Manually draw the arc geometry
-      stroke(color(0, 0, 0));
-      strokeWeight(1.0);
+      if (enableStroke) {
+        stroke(color(0, 0, 0));
+        strokeWeight(this.strokeWeight); // 1.0
+      } else {
+        noStroke();
+      }
       fill(color(240, 100, 100));
 //      float x1 = (arcRadius - (arcWidth / 2)) * cos(angleStart);
 //      float y1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
@@ -206,11 +212,15 @@ class SunburstItem {
 //      println("arcRadius =", arcRadius);
       
       //stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
-      stroke(color(0, 0, 0));
-      if (enablePartialOutline) {
-        noStroke();
+      if (enableStroke) {
+        stroke(color(0, 0, 0));
+        if (enablePartialOutline) {
+          noStroke();
+        } else {
+          strokeWeight(1.0);
+        }
       } else {
-        strokeWeight(1.0);
+        noStroke();
       }
       fill(color(0, 0, 100)); // fill(color(240, 100, 100));
       
@@ -279,8 +289,8 @@ class SunburstItem {
 //        float radiansPerDegree = TWO_PI / degreesInCircle;
 //        int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
 
-        stroke(color(0, 0, 0));
-        strokeWeight(1.0);
+//        stroke(color(0, 0, 0));
+//        strokeWeight(1.0);
         noFill();
         
         // Draw the layer's inner arc

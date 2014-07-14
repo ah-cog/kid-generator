@@ -144,8 +144,9 @@ void draw() {
     
     h.setHachurePerturbationAngle(15);
     h.setRoughness(1);
-    h.setFillGap(0.5);
-    h.setFillWeight(0.1);
+    h.setFillGap(0.5); // 0.5
+    h.setIsAlternating(false);
+    h.setFillWeight(0.1); // 0.1
   }
   
   h.setSeed(randomSeed); // Set seed for Handy renderer
