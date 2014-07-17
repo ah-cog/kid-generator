@@ -26,6 +26,7 @@ void setupInterface() {
   int posY = 0;
 
   sliders[si++] = controlP5.addSlider("sceneRotation",0,TWO_PI,left,top+posY+0,len,15);
+  sliders[si++] = controlP5.addSlider("sceneScale",0,1.0,left,top+posY+20,len,15);
   posY += 20;
   sliders[si++] = controlP5.addSlider("layerOneAngle",0,TWO_PI,left,top+posY+20,len,15);
   sliders[si++] = controlP5.addSlider("layerOneLength",0,TWO_PI,left,top+posY+40,len,15);
@@ -33,18 +34,20 @@ void setupInterface() {
   sliders[si++] = controlP5.addSlider("layerTwoLength",0,TWO_PI,left,top+posY+80,len,15);
   sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+100,len,15);
   sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+120,len,15);
-  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+140,len,15);
-  posY += 20;
-  toggles[ti] = controlP5.addToggle("enableSketchiness",showBackground,left+0,top+posY+160,15,15);
+  sliders[si++] = controlP5.addSlider("layerThickness",0,200,left,top+posY+140,len,15);
+  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+160,len,15);
+  posY += 40;
+  toggles[ti] = controlP5.addToggle("enableSketchiness",enableSketchiness,left+0,top+posY+160,15,15);
     toggles[ti++].setLabel("enable sketchiness");
   sliders[si++] = controlP5.addSlider("roughness",0,100,left,top+posY+180,len,15);
   sliders[si++] = controlP5.addSlider("fillGap",0,50,left,top+posY+200,len,15);
   sliders[si++] = controlP5.addSlider("arcSegmentFrequency",2,500,left,top+posY+220,len,15);
-  toggles[ti] = controlP5.addToggle("enableOutline",showBackground,left+0,top+posY+240,15,15);
+  toggles[ti] = controlP5.addToggle("enableOutline",enableOutline,left+0,top+posY+240,15,15);
     toggles[ti++].setLabel("enable outline");
   sliders[si++] = controlP5.addSlider("strokeWeight",1,500,left,top+posY+260,len,15);
+  toggles[ti] = controlP5.addToggle("enableYvesKleinArm",enableYvesKleinArm,left+0,top+posY+280,15,15);
+    toggles[ti++].setLabel("enable second arm blue");
   posY += 50;
-
 
   for (int i = 0; i < si; i++) {
     sliders[i].setGroup(ctrl);

@@ -8,10 +8,11 @@ class SunburstItem {
   float extension;
   float radius; 
   float x,y;
+  float xOffset, yOffset;
   float arcLength;
   float arcWidth = 100;
   
-  boolean enableBackground = false;
+//  boolean enableBackground = false;
   color backgroundColor;
   float backgroundSize = 900;
   
@@ -45,16 +46,20 @@ class SunburstItem {
     this.angleCenter = theAngle + theExtension/2;
     this.angleEnd = theAngle + theExtension;
     
-    this.backgroundColor = color(random(0, 360), 100, 100, 100);
+    this.backgroundColor = color(255, 255, 255, 0);
     
-    this.strokeColor = color(240, 100, 0); // color(360, 100, 100)
+    this.strokeColor = color(0, 0, 255, 100);
     this.negativeStrokeColor = color(0, 0, 100);
     
-    this.fillColor = color(240, 100, 100);
+    this.fillColor = color(60, 0, 199, 100); // Yves Klein Blue (i.e., http://en.wikipedia.org/wiki/Yves_Klein)
+    
+    this.xOffset = 0;
+    this.yOffset = 0;
   }
   
   void setColor(color strokeColor) {
     this.strokeColor = strokeColor;
+    this.fillColor = strokeColor;
   }
   
   void setNegativeColor(color negativeStrokeColor) {
@@ -64,15 +69,25 @@ class SunburstItem {
   void setArcWidth(float arcWidth) {
     this.arcWidth = arcWidth;
   }
+  
+  void setOffset(float xOffset, float yOffset) {
+    this.xOffset = xOffset;
+    this.yOffset = yOffset;
+  }
 
   // ------ draw functions ------
   void draw() {
+    
+    pushMatrix();
+    
+    translate(this.xOffset, this.yOffset);
     
     float arcRadius;
     
     if (this.depth > 0 ) {
 
-      radius = calcAreaRadius(depth, depthMax);
+      //radius = calcAreaRadius(depth, depthMax);
+      radius = 10 + this.depth * arcWidth; // this.depth * 50 + 10;
       x  = cos(angleCenter) * radius;
       y  = sin(angleCenter) * radius;
       float startX  = cos(angleStart) * radius;
@@ -86,8 +101,9 @@ class SunburstItem {
       // arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
       
       // Manually draw the arc geometry
-      if (enableStroke) {
-        stroke(this.strokeColor);
+      if (this.enableStroke) {
+//        stroke(this.strokeColor);
+        h.setStrokeColour(this.strokeColor);
         strokeWeight(this.strokeWeight); // e.g., 1.0
       } else {
         noStroke();
@@ -95,22 +111,24 @@ class SunburstItem {
       
       if (this.enableFill) {
         fill(this.fillColor);
+        h.setFillColour(this.fillColor);
       }
       
       // Draw layer positive segment
       drawLayer(arcRadius);
       
-      // Draw background
-      if (this.enableBackground) {
-        pushMatrix();
-        noStroke();
-        fill(this.backgroundColor);
-        rect(-1 * (this.backgroundSize / 2), -1 * (this.backgroundSize / 2), this.backgroundSize, this.backgroundSize);
-        popMatrix();
-      }
+//      // Draw background
+//      if (this.enableBackground) {
+//        pushMatrix();
+//        noStroke();
+//        fill(this.backgroundColor);
+//        rect(-1 * (this.backgroundSize / 2), -1 * (this.backgroundSize / 2), this.backgroundSize, this.backgroundSize);
+//        popMatrix();
+//      }
       
       if (this.enableNegativeSpaceColor) {
-        stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
+//        stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
+        h.setStrokeColour(this.negativeStrokeColor);
         float newEndAngle = angleStart;
         float newStartAngle = angleEnd % PI;
 //        while (newStartAngle > newEndAngle) {
@@ -120,13 +138,16 @@ class SunburstItem {
         // arcWrap(0, 0, arcRadius, arcRadius, newStartAngle - this.negativeArcPadding, newEndAngle + this.negativeArcPadding); // normaly arc should work
         
         // Fill in the "negative circle" at the center
-        fill(this.negativeStrokeColor);
+//        fill(this.negativeStrokeColor);
+        h.setFillColour(this.fillColor);
         ellipse(0, 0, arcWidth, arcWidth);
         noFill();
       }
     } else {
       drawSecondArmSegment(radius);
     }
+    
+    popMatrix();
   }
 
   // fix for arc
@@ -155,6 +176,7 @@ class SunburstItem {
     float radiansPerDegree = TWO_PI / degreesInCircle;
     int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
     
+    h.setBackgroundColour(color(255,255,255,0));
     // Draw the layer's inner arc
     h.beginShape(POLYGON);
     for(int i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
@@ -209,8 +231,9 @@ class SunburstItem {
     float arcRadius = radius + arcWidth;
     
     //stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
-    if (enableStroke) {
-      stroke(this.strokeColor); // stroke(color(0, 0, 0));
+    if (this.enableStroke) {
+//      stroke(this.strokeColor); // stroke(color(0, 0, 0));
+      h.setStrokeColour(this.strokeColor);
       if (enablePartialOutline) {
         noStroke();
       } else {
@@ -220,7 +243,8 @@ class SunburstItem {
       noStroke();
     }
     
-    fill(this.negativeStrokeColor); // fill(color(240, 100, 100));
+//    fill(this.fillColor); // fill(color(240, 100, 100));
+    h.setFillColour(this.fillColor);
     
     //arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
     
@@ -271,8 +295,9 @@ class SunburstItem {
     if (enablePartialOutline) {
       
       if (enableStroke) {
-        stroke(this.strokeColor); // stroke(color(0, 0, 0));
-        strokeWeight(this.strokeWeight);
+//        stroke(this.strokeColor); // stroke(color(0, 0, 0));
+        h.setStrokeColour(this.strokeColor);
+        h.setStrokeWeight(this.strokeWeight);
       } else {
         noStroke();
       }

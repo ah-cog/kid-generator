@@ -56,7 +56,6 @@ Toggle[] toggles;
 
 
 // ------ interaction vars ------
-float backgroundBrightness = 100;
 
 boolean savePDF = false;
 
@@ -75,8 +74,10 @@ int layerCount = 3;
 color arcStrokeColor;
 color arcFillColor;
 
-float sceneRotation = 0;
+float sceneScale = 0.50;
+float sceneRotation = 0.31;
 
+float layerThickness = 120; // random(50, 120); // TODO: Make this a parameter in the generator!
 float layerOneAngle = 1.59; // 1.84;
 float layerOneLength = 5.57;
 float layerTwoAngle = 3.07;
@@ -87,12 +88,12 @@ float layerOffset = 0.0; // 0.2 * PI; // 0.0; // 0.2 * PI;
 
 boolean enableSketchiness = true;
 float roughness = 1.0; // e.g., 1.0
-float fillGap = 0.5; // e.g., 0.5
-int arcSegmentFrequency = 5; // e.g., 5, 10
-boolean enableOutline = false;
+float fillGap = 1.0; // e.g., 0.5
+int arcSegmentFrequency = 8; // e.g., 5, 10
+boolean enableOutline = true;
 float strokeWeight = 1.0; // e.g., 1.0
 
-boolean showBackground = false;
+boolean enableYvesKleinArm = false;
 
 void setup() { 
   size(800, 800); // size(800, 800, OPENGL);
@@ -105,12 +106,14 @@ void setup() {
 //  h = HandyPresets.createPencil(this);
 //  h = HandyPresets.createColouredPencil(this);
 //  h = HandyPresets.createMarker(this);
+  h.setOverrideFillColour(true);
+  h.setOverrideStrokeColour(true);
   
   sunburstItems = new ArrayList<SunburstItem>();
   radialLayerItems = new ArrayList<RadialLayerItem>();
   
   setupInterface(); 
-  colorMode(HSB, 360, 100, 100);
+  // colorMode(HSB, 360, 100, 100);
 
   frame.setTitle("KID Museum Icon Generator 1");
 }
@@ -138,24 +141,24 @@ void draw() {
     generateIcon(layerCount);
     // initialize = false;
     
-    arcStrokeColor = color(240, 100, 50); // color(360, 100, 100); // color(random(0, 360), 100, 100);
-    arcFillColor = color(random(0, 360), 100, 100);
+//    arcStrokeColor = color(240, 100, 50); // color(360, 100, 100); // color(random(0, 360), 100, 100);
+//    arcFillColor = color(random(0, 360), 100, 100);
     
     // Initialize random number generator seed
     randomSeed = int(random(0, 2147483647));
     
-    h.setHachurePerturbationAngle(15);
+    h.setHachurePerturbationAngle(random(15, 100));
     h.setRoughness(roughness);
     h.setFillGap(fillGap); // 0.5
     h.setIsAlternating(true);
-    h.setFillWeight(0.1); // 0.1
+    h.setFillWeight(0.2); // 0.1
   }
   
   h.setSeed(randomSeed); // Set seed for Handy renderer
 
   pushMatrix();
-  colorMode(HSB, 360, 100, 100, 100);
-  background(0, 0, backgroundBrightness);
+//  colorMode(HSB, 360, 100, 100, 100);
+  background(255, 255, 255);
   noFill();
   ellipseMode(RADIUS);
   strokeCap(SQUARE);
@@ -165,7 +168,7 @@ void draw() {
   // Adjust our view onto the generated visuals
   translate(width / 2, height / 2); //  translate(width / 2, height / 2, -200);
   rotate(sceneRotation);
-  scale(0.8);
+  scale(sceneScale);
 
   // ------ draw the viz items ------
   for (int i = 0 ; i < sunburstItems.size(); i++) {
@@ -205,62 +208,100 @@ void generateIcon (int layerCount) {
   
   sunburstItems.clear();
   
-  color positiveColor = color(245, 100, 100); // color(random(190, 290), random(10, 100), random(50, 100));
-  color negativeSpaceColor = color(0, 0, 100);
-  float arcWidth = 101; // random(50, 120); // TODO: Make this a parameter in the generator!
-  
+//  color positiveColor = color(245, 100, 100); // color(random(190, 290), random(10, 100), random(50, 100));
+//  color negativeSpaceColor = color(0, 0, 100);
+//  float arcWidth = 101; // random(50, 120); // TODO: Make this a parameter in the generator!
+//  
+//  float actualLayerOneAngle = layerOneAngle;
+//  float actualLayerTwoAngle = layerTwoAngle;
+
   float actualLayerOneAngle = layerOneAngle;
   float actualLayerTwoAngle = layerTwoAngle;
 
-  for (int i = 0; i < layerCount; i++) {
-    if (i == 0) {
-      RadialLayerItem radialForm = new RadialLayerItem(null);
-      radialForm.setColor(positiveColor);
-      radialForm.setNegativeColor(negativeSpaceColor);
-      radialForm.setArcWidth(arcWidth);
-      radialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle + layerOffset * PI);
-      radialForm.distance = random(layerOneLength - layerOffset * PI, layerOneLength + layerOffset * PI);
-      actualLayerOneAngle = radialForm.angle; // TODO: hack! make this better!
-      radialLayerItems.add(radialForm);
-      sunburstItems.add(radialForm.generateSunburstItem());
-//      sunburstItems.add(radialForm.generateNegativeSunburstItem());
-
-      println("draw 1");
-    } else {
-      RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
-      // sunburstItem.setColor(this.strokeColor);
-      radialForm.setColor(positiveColor);
-      radialForm.setNegativeColor(negativeSpaceColor);
-      radialForm.setArcWidth(arcWidth);
-      if (i == 1) {
-        radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
-        actualLayerTwoAngle = radialForm.angle; // TODO: hack! make this better!
-        radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
-      } else if (i == 2) {
-        radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
-        radialForm.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
+  for (int depth = 0; depth < 2; depth++) {
+    
+    float xOffset = depth * 20; // random(-depth * 20, depth * 20);
+    float yOffset = 0; // float yOffset = random(-depth * 20, depth * 20);
+    
+    color positiveColor = color(4, 73, random(100,251), random(50, 150)); // color(random(190, 290), random(10, 100), random(50, 100));
+//    if (depth == 0) {
+//      positiveColor = color(245, 100, 100, 33 * depth);
+//    }
+    color negativeSpaceColor = color(255, 255, 255);
+    
+    for (int i = 0; i < layerCount; i++) {
+      if (i == 0) {
+        RadialLayerItem radialForm = new RadialLayerItem(null);
+        radialForm.setOffset(xOffset, yOffset);
+        radialForm.setColor(positiveColor);
+        radialForm.setNegativeColor(negativeSpaceColor);
+        radialForm.setArcWidth(layerThickness);
+        radialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle + layerOffset * PI);
+        radialForm.distance = random(layerOneLength - layerOffset * PI, layerOneLength + layerOffset * PI);
+        actualLayerOneAngle = radialForm.angle; // TODO: hack! make this better!
+        radialLayerItems.add(radialForm);
+        sunburstItems.add(radialForm.generateSunburstItem());
+  //      sunburstItems.add(radialForm.generateNegativeSunburstItem());
+      } else {
+        RadialLayerItem radialForm = new RadialLayerItem(radialLayerItems.get(i - 1));
+        // sunburstItem.setColor(this.strokeColor);
+        radialForm.setColor(positiveColor);
+        radialForm.setNegativeColor(negativeSpaceColor);
+        radialForm.setArcWidth(layerThickness);
+        if (i == 1) {
+          radialForm.setOffset(xOffset, yOffset);
+          radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
+          actualLayerTwoAngle = radialForm.angle; // TODO: hack! make this better!
+          radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
+        } else if (i == 2) {
+          radialForm.setOffset(xOffset, yOffset);
+          radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
+          radialForm.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
+        }
+        radialLayerItems.add(radialForm);
+        sunburstItems.add(radialForm.generateSunburstItem());
+  //      sunburstItems.add(radialForm.generateNegativeSunburstItem());
       }
-      radialLayerItems.add(radialForm);
-      sunburstItems.add(radialForm.generateSunburstItem());
-//      sunburstItems.add(radialForm.generateNegativeSunburstItem());
-      println("draw 2");
     }
   }
   
   // Add "second arm" arc segment
   RadialLayerItem secondaryRadialForm = new RadialLayerItem(null);
-  secondaryRadialForm.layerNumber = -1;
+  if (this.enableYvesKleinArm) {
+    secondaryRadialForm.setColor(color(60, 0, 199));
+  } else {
+    secondaryRadialForm.setColor(color(255, 255, 255));
+  }
   // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
-  secondaryRadialForm.setArcWidth(arcWidth); // secondaryRadialForm.setArcWidth(0.5 * arcWidth);
-  // secondaryRadialForm.angle = random(layerOneAngle - /*layerOffset*/ 0.15 * PI, layerOneAngle + /*layerOffset*/ 0.15 * PI);
+  secondaryRadialForm.layerNumber = -1;
+  secondaryRadialForm.setArcWidth(layerThickness);
   secondaryRadialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle - layerOffset * PI) - 0.005 * PI;
-  // secondaryRadialForm.distance = random(0.5 * QUARTER_PI, QUARTER_PI);
-//  actualLayerTwoAngle
   secondaryRadialForm.distance = random(0, (actualLayerTwoAngle - actualLayerOneAngle) + layerOffset * PI); // actualLayerTwoAngle + layerOffset * PI);
   radialLayerItems.add(secondaryRadialForm);
   SunburstItem sunburstItem2 = secondaryRadialForm.generateSunburstItem();
-  sunburstItem2.radius = 150; // random(100, 200); // 150; // calcAreaRadius(depth, depthMax);
+  sunburstItem2.radius = 150;
+  sunburstItem2.setColor(color(255, 255, 255));
   sunburstItems.add(sunburstItem2);
+  
+//  // Add "third arm" arc segment
+//  RadialLayerItem tertiaryRadialForm = new RadialLayerItem(null);
+//  if (this.enableYvesKleinArm) {
+//    tertiaryRadialForm.setColor(color(60, 0, 199));
+//  } else {
+//    tertiaryRadialForm.setColor(color(255, 255, 255));
+//  }
+//  tertiaryRadialForm.layerNumber = -1;
+//  // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
+//  tertiaryRadialForm.setArcWidth(arcWidth); // secondaryRadialForm.setArcWidth(0.5 * arcWidth);
+//  // secondaryRadialForm.angle = random(layerOneAngle - /*layerOffset*/ 0.15 * PI, layerOneAngle + /*layerOffset*/ 0.15 * PI);
+//  tertiaryRadialForm.angle = random(layerTwoAngle + layerTwoLength - layerOffset * PI, layerOneAngle - layerOffset * PI) - 0.005 * PI;
+//  // secondaryRadialForm.distance = random(0.5 * QUARTER_PI, QUARTER_PI);
+//  tertiaryRadialForm.distance = random(layerOneAngle - layerOffset * PI, layerOneAngle - layerOffset * PI) - 0.005 * PI;
+//  radialLayerItems.add(tertiaryRadialForm);
+//  SunburstItem sunburstItem3 = tertiaryRadialForm.generateSunburstItem();
+//  sunburstItem3.radius = 150; // random(100, 200); // 150; // calcAreaRadius(depth, depthMax);
+//  //sunburstItem2.setColor(color(4, 73, 251, random(50, 255)));
+//  sunburstItems.add(sunburstItem3);
 
   // mine sunburst -> get min and max values 
   // reset the old values, without the root element
