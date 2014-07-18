@@ -12,9 +12,9 @@ void setupInterface() {
   ctrl.setColorLabel(color(255));
   ctrl.close();
 
-  sliders = new Slider[20];
-  ranges = new Range[10];
-  toggles = new Toggle[10];
+  sliders = new Slider[40];
+  ranges = new Range[20];
+  toggles = new Toggle[40];
 
   int left = 0;
   int top = 5;
@@ -30,13 +30,19 @@ void setupInterface() {
   posY += 20;
   sliders[si++] = controlP5.addSlider("layerOneAngle",0,TWO_PI,left,top+posY+20,len,15);
   sliders[si++] = controlP5.addSlider("layerOneLength",0,TWO_PI,left,top+posY+40,len,15);
-  sliders[si++] = controlP5.addSlider("layerTwoAngle",0,TWO_PI,left,top+posY+60,len,15);
-  sliders[si++] = controlP5.addSlider("layerTwoLength",0,TWO_PI,left,top+posY+80,len,15);
-  sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+100,len,15);
-  sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+120,len,15);
-  sliders[si++] = controlP5.addSlider("layerThickness",0,200,left,top+posY+140,len,15);
-  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+160,len,15);
-  posY += 40;
+  sliders[si++] = controlP5.addSlider("layerOneTransparency",0,255,left,top+posY+60,len,15);
+  sliders[si++] = controlP5.addSlider("layerOneFillGap",0,255,left,top+posY+80,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoAngle",0,TWO_PI,left,top+posY+100,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoLength",0,TWO_PI,left,top+posY+120,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoTransparency",0,255,left,top+posY+140,len,15);
+  sliders[si++] = controlP5.addSlider("layerTwoFillGap",0,255,left,top+posY+160,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeAngle",0,TWO_PI,left,top+posY+180,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeLength",0,TWO_PI,left,top+posY+200,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeTransparency",0,255,left,top+posY+220,len,15);
+  sliders[si++] = controlP5.addSlider("layerThickness",0,200,left,top+posY+240,len,15);
+  sliders[si++] = controlP5.addSlider("layerThreeFillGap",0,255,left,top+posY+260,len,15);
+  sliders[si++] = controlP5.addSlider("layerOffset",0,TWO_PI,left,top+posY+280,len,15);
+  posY += 140;
   toggles[ti] = controlP5.addToggle("enableSketchiness",enableSketchiness,left+0,top+posY+160,15,15);
     toggles[ti++].setLabel("enable sketchiness");
   sliders[si++] = controlP5.addSlider("roughness",0,100,left,top+posY+180,len,15);
@@ -47,6 +53,9 @@ void setupInterface() {
   sliders[si++] = controlP5.addSlider("strokeWeight",1,500,left,top+posY+260,len,15);
   toggles[ti] = controlP5.addToggle("enableYvesKleinArm",enableYvesKleinArm,left+0,top+posY+280,15,15);
     toggles[ti++].setLabel("enable second arm blue");
+  sliders[si++] = controlP5.addSlider("cLayerCount",1,3,left,top+posY+300,len,15);
+  sliders[si++] = controlP5.addSlider("xOffset",-100,100,left,top+posY+320,len,15);
+  sliders[si++] = controlP5.addSlider("yOffset",-100,100,left,top+posY+340,len,15);
   posY += 50;
 
   for (int i = 0; i < si; i++) {

@@ -43,7 +43,7 @@ class SunburstItem {
     // sunburst angles and extension
     this.angleStart = theAngle;
     this.extension = theExtension;
-    this.angleCenter = theAngle + theExtension/2;
+    this.angleCenter = theAngle + theExtension / 2;
     this.angleEnd = theAngle + theExtension;
     
     this.backgroundColor = color(255, 255, 255, 0);
@@ -86,8 +86,8 @@ class SunburstItem {
     
     if (this.depth > 0 ) {
 
-      //radius = calcAreaRadius(depth, depthMax);
-      radius = 10 + this.depth * arcWidth; // this.depth * 50 + 10;
+      radius = calcAreaRadius(depth, depthMax);
+//      radius = 10 + this.depth * arcWidth; // this.depth * 50 + 10;
       x  = cos(angleCenter) * radius;
       y  = sin(angleCenter) * radius;
       float startX  = cos(angleStart) * radius;
@@ -233,7 +233,7 @@ class SunburstItem {
     //stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
     if (this.enableStroke) {
 //      stroke(this.strokeColor); // stroke(color(0, 0, 0));
-      h.setStrokeColour(this.strokeColor);
+      h.setStrokeColour(color(60, 0, 199));
       if (enablePartialOutline) {
         noStroke();
       } else {
@@ -242,16 +242,17 @@ class SunburstItem {
     } else {
       noStroke();
     }
+    h.setStrokeColour(color(60, 0, 199));
     
 //    fill(this.fillColor); // fill(color(240, 100, 100));
-    h.setFillColour(this.fillColor);
+    h.setFillColour(color(60, 0, 199));
     
     //arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
     
     float angleArcStep = PI / 180 * 5;
 
     float degreesInCircle = 360;
-    float beginAngleInDegrees = (angleStart / TWO_PI) * degreesInCircle;
+    float beginAngleInDegrees = ((angleStart + 0.1 * PI) / TWO_PI) * degreesInCircle;
     float endAngleInDegrees = (angleEnd / TWO_PI) * degreesInCircle;
     float radiansPerDegree = TWO_PI / degreesInCircle;
     int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
@@ -287,7 +288,7 @@ class SunburstItem {
     yy1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
     xx2 = (arcRadius + (arcWidth / 2)) * cos(angleStart);
     yy2 = (arcRadius + (arcWidth / 2)) * sin(angleStart);
-    h.line(xx1, yy1, xx2, yy2);
+//    h.line(xx1, yy1, xx2, yy2); // TODO: (Commenting out here is a hack... uncomment and fix it's drawing location)
     
     h.endShape();
     

@@ -75,28 +75,42 @@ color arcStrokeColor;
 color arcFillColor;
 
 float sceneScale = 0.50;
-float sceneRotation = 0.31;
+float sceneRotation = 0.00;
 
-float layerThickness = 120; // random(50, 120); // TODO: Make this a parameter in the generator!
-float layerOneAngle = 1.59; // 1.84;
+float layerThickness = 100; // random(50, 120); // TODO: Make this a parameter in the generator!
+float layerOneAngle = 1.42; // 1.59; // 1.84;
 float layerOneLength = 5.57;
+float layerOneTransparency = 30;
+float layerOneFillGap = 0.5;
+
 float layerTwoAngle = 3.07;
 float layerTwoLength = 3.07;
-float layerThreeAngle = 1.84;
+float layerTwoTransparency = 255;
+float layerTwoFillGap = 0.5;
+
+float layerThreeAngle = 1.42; // 1.84;
 float layerThreeLength = 4.48; // 5.13;
+float layerThreeTransparency = 255;
+float layerThreeFillGap = 0.5;
+
 float layerOffset = 0.0; // 0.2 * PI; // 0.0; // 0.2 * PI;
 
 boolean enableSketchiness = true;
 float roughness = 1.0; // e.g., 1.0
-float fillGap = 1.0; // e.g., 0.5
-int arcSegmentFrequency = 8; // e.g., 5, 10
+float fillGap = 7.0; // e.g., 0.5
+int arcSegmentFrequency = 2; // e.g., 5, 10
 boolean enableOutline = true;
 float strokeWeight = 1.0; // e.g., 1.0
 
+int cLayerCount = 2;
+float xOffset = 40;
+float yOffset = 0;
+
 boolean enableYvesKleinArm = false;
 
-void setup() { 
-  size(800, 800); // size(800, 800, OPENGL);
+void setup() {
+  size(displayWidth, displayHeight);
+  // size(800, 800); // size(800, 800, OPENGL);
   // hint(DISABLE_DEPTH_TEST);
   
   smooth();
@@ -149,7 +163,7 @@ void draw() {
     
     h.setHachurePerturbationAngle(random(15, 100));
     h.setRoughness(roughness);
-    h.setFillGap(fillGap); // 0.5
+//    h.setFillGap(fillGap); // 0.5
     h.setIsAlternating(true);
     h.setFillWeight(0.2); // 0.1
   }
@@ -218,12 +232,24 @@ void generateIcon (int layerCount) {
   float actualLayerOneAngle = layerOneAngle;
   float actualLayerTwoAngle = layerTwoAngle;
 
-  for (int depth = 0; depth < 2; depth++) {
+  for (int depth = 0; depth < this.cLayerCount; depth++) {
     
-    float xOffset = depth * 20; // random(-depth * 20, depth * 20);
-    float yOffset = 0; // float yOffset = random(-depth * 20, depth * 20);
+    float xOffsetForArc = depth * xOffset; // random(-depth * 20, depth * 20);
+    float yOffsetForArc = depth * yOffset; // float yOffset = random(-depth * 20, depth * 20);
     
-    color positiveColor = color(4, 73, random(100,251), random(50, 150)); // color(random(190, 290), random(10, 100), random(50, 100));
+    float layerTransparency = 0.0;
+    if (depth == 0) {
+      layerTransparency = layerOneTransparency;
+      h.setFillGap(layerOneFillGap);
+    } else if (depth == 1) {
+      layerTransparency = layerTwoTransparency;
+      h.setFillGap(layerTwoFillGap);
+    } else if (depth == 2) {
+      layerTransparency = layerThreeTransparency;
+      h.setFillGap(layerThreeFillGap);
+    }
+    
+    color positiveColor = color(4, 73, random(100,251), layerTransparency); // color(random(190, 290), random(10, 100), random(50, 100));
 //    if (depth == 0) {
 //      positiveColor = color(245, 100, 100, 33 * depth);
 //    }
@@ -232,7 +258,7 @@ void generateIcon (int layerCount) {
     for (int i = 0; i < layerCount; i++) {
       if (i == 0) {
         RadialLayerItem radialForm = new RadialLayerItem(null);
-        radialForm.setOffset(xOffset, yOffset);
+        radialForm.setOffset(xOffsetForArc, yOffsetForArc);
         radialForm.setColor(positiveColor);
         radialForm.setNegativeColor(negativeSpaceColor);
         radialForm.setArcWidth(layerThickness);
@@ -249,12 +275,12 @@ void generateIcon (int layerCount) {
         radialForm.setNegativeColor(negativeSpaceColor);
         radialForm.setArcWidth(layerThickness);
         if (i == 1) {
-          radialForm.setOffset(xOffset, yOffset);
+          radialForm.setOffset(xOffsetForArc, yOffsetForArc);
           radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
           actualLayerTwoAngle = radialForm.angle; // TODO: hack! make this better!
           radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
         } else if (i == 2) {
-          radialForm.setOffset(xOffset, yOffset);
+          radialForm.setOffset(xOffsetForArc, yOffsetForArc);
           radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
           radialForm.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
         }
@@ -270,7 +296,7 @@ void generateIcon (int layerCount) {
   if (this.enableYvesKleinArm) {
     secondaryRadialForm.setColor(color(60, 0, 199));
   } else {
-    secondaryRadialForm.setColor(color(255, 255, 255));
+    secondaryRadialForm.setColor(color(60, 0, 199));
   }
   // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
   secondaryRadialForm.layerNumber = -1;
@@ -344,6 +370,9 @@ String timestamp() {
   return String.format("%1$ty%1$tm%1$td_%1$tH%1$tM%1$tS", Calendar.getInstance());
 } 
 
+boolean sketchFullScreen() {
+  return true;
+}
 
 
 
