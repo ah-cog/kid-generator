@@ -143,8 +143,11 @@ class SunburstItem {
         ellipse(0, 0, arcWidth, arcWidth);
         noFill();
       }
-    } else {
-      drawSecondArmSegment(radius);
+    } else if (this.depth == -1) {
+//      drawSecondArmSegment(radius);
+    } else if (this.depth == -2) {
+      //drawBackgroundCircle(radius * 3);
+//      drawBackgroundCircle(200);
     }
     
     popMatrix();
@@ -179,7 +182,16 @@ class SunburstItem {
     h.setBackgroundColour(color(255,255,255,0));
     // Draw the layer's inner arc
     h.beginShape(POLYGON);
-    for(int i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
+    int i = 0;
+    for(i = int(beginAngleInDegrees); i < int(endAngleInDegrees); i += angleArcStepInDegrees) {
+      float angleInRadians = i * radiansPerDegree;
+      float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);
+      float yy = (arcRadius - (arcWidth / 2)) * sin(angleInRadians);
+      h.vertex(xx, yy);
+    }
+    // Correct the drawing. Draw the last line "manually" if overstepped endpoint (NOTE: Removing this makes the sketch look more rough!)
+    if (i > angleArcStepInDegrees) {
+      i = int(endAngleInDegrees);
       float angleInRadians = i * radiansPerDegree;
       float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);
       float yy = (arcRadius - (arcWidth / 2)) * sin(angleInRadians);
@@ -197,7 +209,15 @@ class SunburstItem {
     h.line(xx1, yy1, xx2, yy2);
     
     // Draw the layer's outer arc
-    for(int i = int(endAngleInDegrees); i >= int(beginAngleInDegrees); i -= angleArcStepInDegrees) {
+    for(i = int(endAngleInDegrees); i >= int(beginAngleInDegrees); i -= angleArcStepInDegrees) {
+      float angleInRadians = i * radiansPerDegree;
+      float xx = (arcRadius + (arcWidth / 2)) * cos(angleInRadians);
+      float yy = (arcRadius + (arcWidth / 2)) * sin(angleInRadians);
+      h.vertex(xx, yy);
+    }
+    // Correct the drawing. Draw the last line "manually" if overstepped endpoint (NOTE: Removing this makes the sketch look more rough!)
+    if (i < int(beginAngleInDegrees)) {
+      i = int(beginAngleInDegrees);
       float angleInRadians = i * radiansPerDegree;
       float xx = (arcRadius + (arcWidth / 2)) * cos(angleInRadians);
       float yy = (arcRadius + (arcWidth / 2)) * sin(angleInRadians);
@@ -252,7 +272,7 @@ class SunburstItem {
     float angleArcStep = PI / 180 * 5;
 
     float degreesInCircle = 360;
-    float beginAngleInDegrees = ((angleStart + 0.1 * PI) / TWO_PI) * degreesInCircle;
+    float beginAngleInDegrees = ((angleStart) / TWO_PI) * degreesInCircle;
     float endAngleInDegrees = (angleEnd / TWO_PI) * degreesInCircle;
     float radiansPerDegree = TWO_PI / degreesInCircle;
     int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
@@ -288,7 +308,7 @@ class SunburstItem {
     yy1 = (arcRadius - (arcWidth / 2)) * sin(angleStart);
     xx2 = (arcRadius + (arcWidth / 2)) * cos(angleStart);
     yy2 = (arcRadius + (arcWidth / 2)) * sin(angleStart);
-//    h.line(xx1, yy1, xx2, yy2); // TODO: (Commenting out here is a hack... uncomment and fix it's drawing location)
+    h.line(xx1, yy1, xx2, yy2); // TODO: (Commenting out here is a hack... uncomment and fix it's drawing location)
     
     h.endShape();
     
@@ -347,5 +367,58 @@ class SunburstItem {
       
       h.endShape();
     }
+  }
+
+  void drawBackgroundCircle(float radius) {
+  // Draw the "second arm" arc segment
+
+//    strokeWeight(arcWidth); // strokeWeight(depthWeight * theFileScale); 
+
+    x  = cos(angleCenter) * radius;
+    y  = sin(angleCenter) * radius;
+    float startX  = cos(angleStart) * radius;
+    float startY  = sin(angleStart) * radius;  
+    float endX  = cos(angleEnd) * radius;
+    float endY  = sin(angleEnd) * radius; 
+    arcLength = dist(startX, startY, endX, endY);
+    float arcRadius = radius + arcWidth;
+    
+    //stroke(this.negativeStrokeColor); // stroke(arcStrokeColor);
+//    if (this.enableStroke) {
+//      stroke(this.strokeColor); // stroke(color(0, 0, 0));
+//      h.setStrokeColour(color(255,255,255,255)); // this.strokeColor);
+      if (enablePartialOutline) {
+//        noStroke();
+      } else {
+        strokeWeight(this.strokeWeight);
+      }
+//    } else {
+//      noStroke();
+//    }
+    h.setStrokeColour(color(255, 255, 255, 0));
+    
+    fill(color(60, 0, 199)); // fill(color(240, 100, 100));
+    h.setFillColour(this.fillColor);
+    
+    //arcWrap(0, 0, arcRadius, arcRadius, angleStart, angleEnd); // normaly arc should work
+    
+    float angleArcStep = PI / 180 * 5;
+
+    float degreesInCircle = 360;
+    float beginAngleInDegrees = ((angleStart) / TWO_PI) * degreesInCircle;
+    float endAngleInDegrees = (angleEnd / TWO_PI) * degreesInCircle;
+    float radiansPerDegree = TWO_PI / degreesInCircle;
+    int angleArcStepInDegrees = int((angleArcStep / TWO_PI) * degreesInCircle);
+    
+    // Draw the layer's inner arc
+    h.beginShape();
+    for(int i = int(0); i < int(360); i += angleArcStepInDegrees) {
+      float angleInRadians = i * radiansPerDegree;
+      float xx = (arcRadius - (arcWidth / 2)) * cos(angleInRadians);
+      float yy = (arcRadius - (arcWidth / 2)) * sin(angleInRadians);
+      h.vertex(xx, yy);
+    }
+    
+    h.endShape(CLOSE);
   }
 }

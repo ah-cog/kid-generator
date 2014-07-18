@@ -126,8 +126,7 @@ void setup() {
   sunburstItems = new ArrayList<SunburstItem>();
   radialLayerItems = new ArrayList<RadialLayerItem>();
   
-  setupInterface(); 
-  // colorMode(HSB, 360, 100, 100);
+  setupInterface();
 
   frame.setTitle("KID Museum Icon Generator 1");
 }
@@ -136,6 +135,7 @@ long randomSeed = 1234;
 
 void draw() {
   
+  // Set up the sketchy effect
   if (enableSketchiness) {
     h.setIsHandy(true);
   } else {
@@ -183,6 +183,18 @@ void draw() {
   translate(width / 2, height / 2); //  translate(width / 2, height / 2, -200);
   rotate(sceneRotation);
   scale(sceneScale);
+  
+  /*
+  // Draw the background circle;
+  h.setStrokeColour(color(4, 73, random(100, 251), layerTwoTransparency));
+  h.setFillColour(color(4, 73, random(100, 251), layerTwoTransparency));
+  h.setBackgroundColour(color(4, 73, random(100, 251), layerTwoTransparency));
+  h.setHachurePerturbationAngle(random(15, 100));
+  h.setRoughness(roughness);
+    h.setFillGap(fillGap); // 0.5
+  h.setIsAlternating(true);
+  h.ellipse(0, 0, 600, 600);
+  */
 
   // ------ draw the viz items ------
   for (int i = 0 ; i < sunburstItems.size(); i++) {
@@ -199,6 +211,16 @@ void draw() {
 //  for (int i = 0; i < 100; i++) {
 //    ellipse(0, 0, 100 + step * i, 100 + step * i);
 //  }
+
+//h.setHachurePerturbationAngle(random(15, 100));
+//    h.setRoughness(roughness);
+//    h.setFillGap(fillGap); // 0.5
+//    h.setIsAlternating(true);
+//    h.setFillWeight(0.2); // 0.1
+//  h.setBackgroundColour(color(0));
+//  h.setFillColour(color(206,0,0,255));
+//  h.setStrokeColour(color(0));
+//  h.ellipse(0,0,this.layerCount * this.layerThickness, this.layerCount * this.layerThickness);
   
   popMatrix();
 
@@ -231,11 +253,34 @@ void generateIcon (int layerCount) {
 
   float actualLayerOneAngle = layerOneAngle;
   float actualLayerTwoAngle = layerTwoAngle;
+  
+  
+  
+  // Add "circle background"
+  if (false) {
+    h.setFillGap(layerTwoFillGap);
+    RadialLayerItem circleForm = new RadialLayerItem(null);
+  //  if (this.enableYvesKleinArm) {
+      circleForm.setColor(color(4, 73, random(100,251), layerOneTransparency));
+  //  } else {
+  //    circleForm.setColor(color(60, 0, 199));
+  //  }
+    // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
+    circleForm.layerNumber = -2;
+    circleForm.setArcWidth(600);
+    circleForm.angle = 0;
+    circleForm.distance = TWO_PI;
+    radialLayerItems.add(circleForm);
+    SunburstItem sunburstItem3 = circleForm.generateSunburstItem();
+    sunburstItem3.radius = 800;
+    sunburstItem3.setColor(color(4, 73, random(100,251), layerOneTransparency));
+    sunburstItems.add(sunburstItem3);
+  }
 
   for (int depth = 0; depth < this.cLayerCount; depth++) {
     
-    float xOffsetForArc = depth * xOffset; // random(-depth * 20, depth * 20);
-    float yOffsetForArc = depth * yOffset; // float yOffset = random(-depth * 20, depth * 20);
+    float xOffsetForArc = (this.cLayerCount - depth - 1) * xOffset; // random(-depth * 20, depth * 20);
+    float yOffsetForArc = (this.cLayerCount - depth - 1) * yOffset; // float yOffset = random(-depth * 20, depth * 20);
     
     float layerTransparency = 0.0;
     if (depth == 0) {
@@ -292,22 +337,24 @@ void generateIcon (int layerCount) {
   }
   
   // Add "second arm" arc segment
-  RadialLayerItem secondaryRadialForm = new RadialLayerItem(null);
-  if (this.enableYvesKleinArm) {
-    secondaryRadialForm.setColor(color(60, 0, 199));
-  } else {
-    secondaryRadialForm.setColor(color(60, 0, 199));
+  if (true) {
+    RadialLayerItem secondaryRadialForm = new RadialLayerItem(null);
+    if (this.enableYvesKleinArm) {
+      secondaryRadialForm.setColor(color(60, 0, 199));
+    } else {
+      secondaryRadialForm.setColor(color(60, 0, 199));
+    }
+    // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
+    secondaryRadialForm.layerNumber = -1;
+    secondaryRadialForm.setArcWidth(layerThickness);
+    secondaryRadialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle - layerOffset * PI) - 0.005 * PI;
+    secondaryRadialForm.distance = random(0, (actualLayerTwoAngle - actualLayerOneAngle) + layerOffset * PI); // actualLayerTwoAngle + layerOffset * PI);
+    radialLayerItems.add(secondaryRadialForm);
+    SunburstItem sunburstItem2 = secondaryRadialForm.generateSunburstItem();
+    sunburstItem2.radius = 150;
+    sunburstItem2.setColor(color(255, 255, 255));
+    sunburstItems.add(sunburstItem2);
   }
-  // radialForm.setNegativeColor(color(360, 100, 100, 100)); //radialForm.setNegativeColor(negativeSpaceColor);
-  secondaryRadialForm.layerNumber = -1;
-  secondaryRadialForm.setArcWidth(layerThickness);
-  secondaryRadialForm.angle = random(layerOneAngle - layerOffset * PI, layerOneAngle - layerOffset * PI) - 0.005 * PI;
-  secondaryRadialForm.distance = random(0, (actualLayerTwoAngle - actualLayerOneAngle) + layerOffset * PI); // actualLayerTwoAngle + layerOffset * PI);
-  radialLayerItems.add(secondaryRadialForm);
-  SunburstItem sunburstItem2 = secondaryRadialForm.generateSunburstItem();
-  sunburstItem2.radius = 150;
-  sunburstItem2.setColor(color(255, 255, 255));
-  sunburstItems.add(sunburstItem2);
   
 //  // Add "third arm" arc segment
 //  RadialLayerItem tertiaryRadialForm = new RadialLayerItem(null);
