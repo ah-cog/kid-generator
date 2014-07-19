@@ -53,9 +53,10 @@ void setupInterface() {
   sliders[si++] = controlP5.addSlider("strokeWeight",1,500,left,top+posY+260,len,15);
   toggles[ti] = controlP5.addToggle("enableYvesKleinArm",enableYvesKleinArm,left+0,top+posY+280,15,15);
     toggles[ti++].setLabel("enable second arm blue");
-  sliders[si++] = controlP5.addSlider("cLayerCount",1,3,left,top+posY+300,len,15);
-  sliders[si++] = controlP5.addSlider("xOffset",-100,100,left,top+posY+320,len,15);
-  sliders[si++] = controlP5.addSlider("yOffset",-100,100,left,top+posY+340,len,15);
+  sliders[si++] = controlP5.addSlider("secondArmAngleOffset",0,360,left,top+posY+300,len,15);
+  sliders[si++] = controlP5.addSlider("cLayerCount",1,3,left,top+posY+320,len,15);
+  sliders[si++] = controlP5.addSlider("xOffset",-100,100,left,top+posY+340,len,15);
+  sliders[si++] = controlP5.addSlider("yOffset",-100,100,left,top+posY+360,len,15);
   posY += 50;
 
   for (int i = 0; i < si; i++) {

@@ -44,6 +44,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.io.File;
 import org.gicentre.handy.*;
+import gifAnimation.*;
 
 HandyRenderer h;
 
@@ -53,6 +54,10 @@ boolean showGUI = false;
 Slider[] sliders;
 Range[] ranges;
 Toggle[] toggles;
+
+
+// ------ animated gif ------
+GifMaker gifExport;
 
 
 // ------ interaction vars ------
@@ -77,10 +82,10 @@ color arcFillColor;
 float sceneScale = 0.50;
 float sceneRotation = 0.00;
 
-float layerThickness = 100; // random(50, 120); // TODO: Make this a parameter in the generator!
+float layerThickness = 88; // random(50, 120); // TODO: Make this a parameter in the generator!
 float layerOneAngle = 1.42; // 1.59; // 1.84;
 float layerOneLength = 5.57;
-float layerOneTransparency = 30;
+float layerOneTransparency = 70;
 float layerOneFillGap = 0.5;
 
 float layerTwoAngle = 3.07;
@@ -103,14 +108,17 @@ boolean enableOutline = true;
 float strokeWeight = 1.0; // e.g., 1.0
 
 int cLayerCount = 2;
-float xOffset = 40;
+float xOffset = -30;
 float yOffset = 0;
 
 boolean enableYvesKleinArm = false;
 
+boolean saveGif = false;
+boolean savingGif = false;
+
 void setup() {
-  size(displayWidth, displayHeight);
-  // size(800, 800); // size(800, 800, OPENGL);
+//  size(displayWidth, displayHeight);
+  size(800, 800); // size(800, 800, OPENGL);
   // hint(DISABLE_DEPTH_TEST);
   
   smooth();
@@ -135,6 +143,14 @@ long randomSeed = 1234;
 
 void draw() {
   
+  if (saveGif) {
+    saveGif = false;
+    savingGif = true;
+    gifExport = new GifMaker(this, "data/output/gif/" + timestamp() + ".gif");
+    gifExport.setRepeat(0); // make it an "endless" animation
+//    gifExport.setTransparent(0,0,0);    // black is transparent
+  }
+  
   // Set up the sketchy effect
   if (enableSketchiness) {
     h.setIsHandy(true);
@@ -152,7 +168,10 @@ void draw() {
   }
   
   if (initialize) {
-    generateIcon(layerCount);
+    // TODO: Clear the list!
+    sunburstItems.clear();
+//    generateIcon(layerCount, -400, 0);
+    generateIcon(layerCount, 0, 0);
     // initialize = false;
     
 //    arcStrokeColor = color(240, 100, 50); // color(360, 100, 100); // color(random(0, 360), 100, 100);
@@ -230,6 +249,12 @@ void draw() {
     println("saving to pdf – done");
   }
   
+  // Save frame to animated gif
+  if (savingGif) {
+    gifExport.setDelay(1);
+    gifExport.addFrame();
+  }
+  
   if (initialize) {
     if (recordFrames == true) {
       saveFrame("data/output/"+timestamp()+"_##.png");
@@ -240,9 +265,9 @@ void draw() {
   drawGUI();
 }
 
-void generateIcon (int layerCount) {
+void generateIcon (int layerCount, float xShift, float yShift) {
   
-  sunburstItems.clear();
+//  sunburstItems.clear();
   
 //  color positiveColor = color(245, 100, 100); // color(random(190, 290), random(10, 100), random(50, 100));
 //  color negativeSpaceColor = color(0, 0, 100);
@@ -294,16 +319,20 @@ void generateIcon (int layerCount) {
       h.setFillGap(layerThreeFillGap);
     }
     
-    color positiveColor = color(4, 73, random(100,251), layerTransparency); // color(random(190, 290), random(10, 100), random(50, 100));
-//    if (depth == 0) {
+//    color positiveColor = color(4, random(100,251), 72, layerTransparency); // color(random(190, 290), random(10, 100), random(50, 100));
+//    if (depth == 1) {
 //      positiveColor = color(245, 100, 100, 33 * depth);
 //    }
+    color positiveColor = color(4, 73, random(100,251), layerTransparency); // color(random(190, 290), random(10, 100), random(50, 100));
+    if (depth == 1) {
+      positiveColor = color(random(233,255), random(69,165), random(0,128), layerTransparency);
+    }
     color negativeSpaceColor = color(255, 255, 255);
     
     for (int i = 0; i < layerCount; i++) {
       if (i == 0) {
         RadialLayerItem radialForm = new RadialLayerItem(null);
-        radialForm.setOffset(xOffsetForArc, yOffsetForArc);
+        radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
         radialForm.setColor(positiveColor);
         radialForm.setNegativeColor(negativeSpaceColor);
         radialForm.setArcWidth(layerThickness);
@@ -320,12 +349,12 @@ void generateIcon (int layerCount) {
         radialForm.setNegativeColor(negativeSpaceColor);
         radialForm.setArcWidth(layerThickness);
         if (i == 1) {
-          radialForm.setOffset(xOffsetForArc, yOffsetForArc);
+        radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
           radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
           actualLayerTwoAngle = radialForm.angle; // TODO: hack! make this better!
           radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
         } else if (i == 2) {
-          radialForm.setOffset(xOffsetForArc, yOffsetForArc);
+        radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
           radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
           radialForm.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
         }
@@ -404,6 +433,15 @@ void keyReleased() {
   if (key == 'r' || key == 'R') { recordFrames = !recordFrames; }
   if (key == 's' || key == 'S') { saveFrame("data/output/"+timestamp()+"_##.png"); }
   if (key == 'p' || key == 'P') { savePDF = true; }
+  if (key == ' ') {
+    if (savingGif) {
+      gifExport.finish();                 // write file
+      savingGif = false;
+      // saveGif = false; // This is redundant, but might be useful as a secondary check!
+    } else if (saveGif == false) {
+      saveGif = true;
+    }
+  }
 
   if (key == 'm' || key == 'M') {
     showGUI = controlP5.group("menu").isOpen();
@@ -418,7 +456,7 @@ String timestamp() {
 } 
 
 boolean sketchFullScreen() {
-  return true;
+  return false;
 }
 
 
