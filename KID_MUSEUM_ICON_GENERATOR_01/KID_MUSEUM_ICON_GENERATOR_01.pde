@@ -325,7 +325,8 @@ void generateIcon (int layerCount, float xShift, float yShift) {
 //    }
     color positiveColor = color(4, 73, random(100,251), layerTransparency); // color(random(190, 290), random(10, 100), random(50, 100));
     if (depth == 1) {
-      positiveColor = color(random(233,255), random(69,165), random(0,128), layerTransparency);
+      //positiveColor = color(random(233,255), random(69,165), random(0,128), layerTransparency);
+      positiveColor = color(255, 163, 67, layerTransparency);
     }
     color negativeSpaceColor = color(255, 255, 255);
     
@@ -349,18 +350,55 @@ void generateIcon (int layerCount, float xShift, float yShift) {
         radialForm.setNegativeColor(negativeSpaceColor);
         radialForm.setArcWidth(layerThickness);
         if (i == 1) {
-        radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
+          radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
           radialForm.angle = random(layerTwoAngle - layerOffset * PI, layerTwoAngle + layerOffset * PI);
           actualLayerTwoAngle = radialForm.angle; // TODO: hack! make this better!
           radialForm.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
+          radialLayerItems.add(radialForm);
+          sunburstItems.add(radialForm.generateSunburstItem());
+          
+//          // Add negative kid arc
+//          RadialLayerItem radialFormB = new RadialLayerItem(radialLayerItems.get(i - 1));
+//          // sunburstItem.setColor(this.strokeColor);
+//          color previousColor = positiveColor;
+//          positiveColor = color(4, 73, random(100,251), layerTransparency);
+//          radialFormB.setColor(positiveColor);
+//          radialFormB.setNegativeColor(negativeSpaceColor);
+//          radialFormB.setArcWidth(layerThickness);
+//          
+//          radialFormB.angle = actualLayerTwoAngle + PI; // , layerTwoAngle + layerOffset * PI + PI);
+//          actualLayerTwoAngle = radialFormB.angle; // TODO: hack! make this better!
+//          radialFormB.distance = random(layerTwoLength - layerOffset * PI, layerTwoLength + layerOffset * PI);
+//          positiveColor = previousColor;
+//        
+//          radialLayerItems.add(radialFormB);
+//          sunburstItems.add(radialFormB.generateSunburstItem());
+//        
         } else if (i == 2) {
-        radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
+          radialForm.setOffset(xOffsetForArc + xShift, yOffsetForArc + yShift);
           radialForm.angle = random(layerThreeAngle - layerOffset * PI, layerThreeAngle + layerOffset * PI);
           radialForm.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
+          radialLayerItems.add(radialForm);
+          sunburstItems.add(radialForm.generateSunburstItem());
+          
+//          // Add negative kid arc
+//          RadialLayerItem radialFormB = new RadialLayerItem(radialLayerItems.get(i - 1));
+//          // sunburstItem.setColor(this.strokeColor);
+//          color previousColor = positiveColor;
+//          positiveColor = color(4, 73, random(100,251), layerTransparency);
+//          radialFormB.setColor(positiveColor);
+//          radialFormB.setNegativeColor(negativeSpaceColor);
+//          radialFormB.setArcWidth(layerThickness);
+//          
+//          radialFormB.angle = radialForm.angle + PI;
+//          layerThreeAngle = radialFormB.angle; // TODO: hack! make this better!
+//          radialFormB.distance = random(layerThreeLength - layerOffset * PI, layerThreeLength + layerOffset * PI);
+//          positiveColor = previousColor;
+//        
+//          radialLayerItems.add(radialFormB);
+//          sunburstItems.add(radialFormB.generateSunburstItem());
         }
-        radialLayerItems.add(radialForm);
-        sunburstItems.add(radialForm.generateSunburstItem());
-  //      sunburstItems.add(radialForm.generateNegativeSunburstItem());
+        
       }
     }
   }
